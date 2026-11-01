@@ -1,3 +1,17 @@
 name = "pratulsaini-fyi"
 compatibility_date = "2026-11-01"
-pages_build_output_dir = "./public"
+
+# Serve on your own domain. Cloudflare creates the DNS records and the SSL certificate.
+routes = [
+  { pattern = "pratulsaini.fyi", custom_domain = true },
+  { pattern = "www.pratulsaini.fyi", custom_domain = true },
+]
+
+# Turn off the *.workers.dev address and per-version preview URLs.
+# Those are the URLs where Cloudflare Access was asking you to log in.
+workers_dev = false
+preview_urls = false
+
+# Static site: serve everything in ./public
+[assets]
+directory = "./public"

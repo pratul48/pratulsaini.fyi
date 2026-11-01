@@ -6,22 +6,20 @@ Personal resume and portfolio site for Pratul Saini. Plain static HTML and CSS w
 
 - `public/index.html`: page content
 - `public/styles.css`: styles
-- `wrangler.toml`: Cloudflare Pages config (project name and output folder)
+- `wrangler.toml`: Cloudflare Workers config. It serves `./public` as static assets on `pratulsaini.fyi` and `www.pratulsaini.fyi`. The `*.workers.dev` URL and preview URLs are turned off.
 
 ## Deploying with Wrangler
 
 From the repo root:
 
 ```sh
-npx wrangler login          # first time only, opens a browser
-npx wrangler pages deploy   # reads wrangler.toml and uploads ./public
+npx wrangler login    # first time only, opens a browser
+npx wrangler deploy   # uploads ./public and attaches the custom domains
 ```
 
-On the first run, Wrangler offers to create the `pratulsaini-fyi` Pages project. Say yes and choose `main` as the production branch.
+Wrangler creates the DNS records and SSL certificate for both domains. If the deploy fails because a DNS record already exists for `pratulsaini.fyi` or `www`, delete that record in Cloudflare → your domain → DNS → Records, then deploy again.
 
-Then attach the domain once: Cloudflare dashboard → Workers & Pages → `pratulsaini-fyi` → **Custom domains** → add `pratulsaini.fyi`. DNS is set up automatically because the domain is on Cloudflare.
-
-To update the site later, edit the files in `public/` and run `npx wrangler pages deploy` again.
+To update the site later, edit the files in `public/` and run `npx wrangler deploy` again.
 
 ## Local preview
 
