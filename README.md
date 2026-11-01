@@ -4,17 +4,29 @@ Personal resume and portfolio site for Pratul Saini. Plain static HTML and CSS w
 
 ## Files
 
-- `index.html`: page content
-- `styles.css`: styles
+- `public/index.html`: page content
+- `public/styles.css`: styles
+- `wrangler.toml`: Cloudflare Pages config (project name and output folder)
 
-## Deploying on Cloudflare Pages
+## Deploying with Wrangler
 
-1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** → **Connect to Git** → pick this repo.
-2. Build settings: Framework preset **None**, build command empty, build output directory `/`.
-3. After the first deploy: project → **Custom domains** → add `pratulsaini.fyi` (and `www.pratulsaini.fyi` if wanted). Cloudflare creates the DNS records automatically since the domain is already on Cloudflare.
+From the repo root:
 
-Every push to `main` redeploys the site.
+```sh
+npx wrangler login          # first time only, opens a browser
+npx wrangler pages deploy   # reads wrangler.toml and uploads ./public
+```
 
-## Editing
+On the first run, Wrangler offers to create the `pratulsaini-fyi` Pages project. Say yes and choose `main` as the production branch.
 
-Change the text in `index.html` and push. To preview locally, run `python3 -m http.server` in this folder and open http://localhost:8000.
+Then attach the domain once: Cloudflare dashboard → Workers & Pages → `pratulsaini-fyi` → **Custom domains** → add `pratulsaini.fyi`. DNS is set up automatically because the domain is on Cloudflare.
+
+To update the site later, edit the files in `public/` and run `npx wrangler pages deploy` again.
+
+## Local preview
+
+```sh
+cd public && python3 -m http.server
+```
+
+Then open http://localhost:8000.
