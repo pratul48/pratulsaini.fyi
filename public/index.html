@@ -8,12 +8,13 @@
   <meta property="og:title" content="Pratul Saini" />
   <meta property="og:description" content="Student at The Ohio State University. Hackathon projects, 3D design, and BloomWise." />
   <meta property="og:url" content="https://pratulsaini.fyi" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232f6f4e'/><text x='50' y='69' font-size='58' text-anchor='middle' fill='%23faf8f4' font-family='Georgia, serif'>p</text></svg>" />
+  <meta name="theme-color" content="#f6f3ec" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231f3d2f'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='%23f6f3ec' font-family='Georgia, serif'>P</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  <!-- Apply the saved theme before the page paints, so there's no flash. Light is the default. -->
+  <!-- Apply the saved theme before the page paints. Light is the default. -->
   <script>
     if (localStorage.getItem('theme') === 'dark') document.documentElement.dataset.theme = 'dark';
   </script>
@@ -21,240 +22,291 @@
 <body>
   <header class="nav">
     <div class="wrap nav-inner">
-      <a href="#top" class="logo">Pratul Saini</a>
-      <nav>
-        <a href="#projects">Projects</a>
+      <a href="#top" class="mark">
+        <span class="mark-badge">P</span>
+        <span class="mark-name">Pratul Saini</span>
+      </a>
+      <nav aria-label="Sections">
+        <a href="#work">Work</a>
         <a href="#experience">Experience</a>
+        <a href="#education">Education</a>
         <a href="#contact">Contact</a>
         <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode">
-          <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         </button>
       </nav>
     </div>
   </header>
 
-  <main id="top" class="wrap">
-    <!-- Intro -->
-    <section class="intro">
-      <h1>Hi, I'm Pratul.</h1>
-      <p>
-        I'm a student at <strong>The Ohio State University</strong> in Columbus. Before that I was at
-        Tesla STEM High School in Redmond, Washington.
-      </p>
-      <p>
-        I build AI projects at hackathons, like an agent that disputes hospital overcharges
-        for you. I also model buildings in Blender and SketchUp, and I
-        co-founded <strong>BloomWise</strong>, where we taught sustainability to more than 1,000
-        K–8 students across 9 schools.
-      </p>
-      <p class="links">
-        <a href="mailto:pratulsaini1@gmail.com">Email</a>
-        <a href="https://www.linkedin.com/in/pratul-saini-226a77290" target="_blank" rel="noopener">LinkedIn</a>
-      </p>
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero wrap">
+      <div class="hero-main">
+        <p class="kicker">Columbus, Ohio</p>
+        <h1>Pratul Saini</h1>
+        <p class="hero-lede">
+          I'm a student at The Ohio State University. I build AI tools at hackathons,
+          design buildings in Blender and SketchUp, and co-founded BloomWise, which brought
+          sustainability lessons to more than 1,000 K–8 students.
+        </p>
+        <div class="actions">
+          <a class="btn btn-solid" href="mailto:pratulsaini1@gmail.com">Email me</a>
+          <a class="btn" href="https://www.linkedin.com/in/pratul-saini-226a77290" target="_blank" rel="noopener">LinkedIn</a>
+          <button class="btn" type="button" id="print-resume">Résumé (PDF)</button>
+        </div>
+      </div>
+
+      <aside class="now" aria-label="Right now">
+        <p class="now-title">Right now</p>
+        <dl>
+          <div><dt>Studying</dt><dd>The Ohio State University</dd></div>
+          <div><dt>Latest build</dt><dd>GameDay Command, a crowd-safety simulator</dd></div>
+          <div><dt>Latest award</dt><dd>1st place at HackByte 2026</dd></div>
+          <div><dt>Open to</dt><dd>Internships, research, and hackathon teams</dd></div>
+        </dl>
+      </aside>
     </section>
 
     <!-- Awards -->
-    <section id="awards" class="section">
-      <h2>Hackathon awards</h2>
-      <ul class="entries">
-        <li class="entry">
-          <div class="when">HackByte 2026</div>
-          <div class="what">
-            <h3>FeelWise <span class="prize gold">1st place</span></h3>
+    <section class="band" aria-labelledby="awards-h">
+      <div class="wrap">
+        <h2 id="awards-h" class="band-title">Hackathon awards</h2>
+        <div class="awards">
+          <article class="award">
+            <p class="place">1st</p>
+            <p class="event">HackByte 2026</p>
+            <h3>FeelWise</h3>
             <p>An AI platform that turns raw, unstructured emotional input into clear psychological insights and next steps.</p>
-          </div>
-        </li>
-        <li class="entry">
-          <div class="when">MHacks 2026</div>
-          <div class="what">
-            <h3>Guardian <span class="prize bronze">3rd place, Capital One track</span></h3>
-            <p>An autonomous agent that finds hospital charges, checks itemized bills against patient records, calls billing departments to dispute overcharges, and texts you when the refund lands.</p>
-          </div>
-        </li>
-        <li class="entry">
-          <div class="when">HackByte 2025</div>
-          <div class="what">
-            <h3>SeaScore <span class="prize">Honorable mention</span></h3>
+          </article>
+          <article class="award">
+            <p class="place">3rd</p>
+            <p class="event">MHacks 2026 · Capital One track</p>
+            <h3>Guardian</h3>
+            <p>An autonomous agent that checks itemized hospital bills against patient records, calls billing departments to dispute overcharges, and texts you when the refund lands.</p>
+          </article>
+          <article class="award">
+            <p class="place place-hm">HM</p>
+            <p class="event">HackByte 2025 · Honorable mention</p>
+            <h3>SeaScore</h3>
             <p>A sustainability web app that turns everyday eco-actions into points to help cut ocean waste.</p>
-          </div>
-        </li>
-      </ul>
+          </article>
+        </div>
+      </div>
     </section>
 
-    <!-- Projects -->
-    <section id="projects" class="section">
-      <h2>Projects</h2>
-      <ul class="entries">
-        <li class="entry">
-          <div class="when">Nov 2026</div>
-          <div class="what">
+    <!-- Work -->
+    <section id="work" class="section wrap">
+      <div class="section-head">
+        <h2>Selected work</h2>
+        <p>Things I've built or designed, newest first.</p>
+      </div>
+      <div class="section-body">
+        <article class="project">
+          <div class="project-meta">
+            <span>Nov 2026</span>
+            <span>Hackathon</span>
+          </div>
+          <div class="project-body">
             <h3>GameDay Command</h3>
             <p>A crowd-simulation platform for stadium operations and public-safety dispatchers. I led the team.</p>
             <ul class="points">
-              <li>Reads video feeds to measure pedestrian and vehicle flow and shows bottlenecks on a live heatmap.</li>
+              <li>Reads video feeds to measure pedestrian and vehicle flow and maps bottlenecks in real time.</li>
               <li>Agent-based simulations predict crowd pressure 10–15 minutes ahead and suggest reroutes.</li>
               <li>A dispatch view for clearing emergency lanes and speeding up stadium exits.</li>
             </ul>
-            <p class="tools">AI · computer vision · simulation</p>
+            <p class="stack">AI · Computer vision · Simulation</p>
           </div>
-        </li>
-        <li class="entry">
-          <div class="when">Mar – Apr 2025</div>
-          <div class="what">
+        </article>
+
+        <article class="project">
+          <div class="project-meta">
+            <span>Mar – Apr 2025</span>
+            <span>Tesla STEM</span>
+          </div>
+          <div class="project-body">
             <h3>Smart Garden</h3>
-            <p>A garden that monitors its own conditions and waters itself. I led a team of four through planning and deadlines, designed the prototypes in Blender, and helped build the working model.</p>
-            <p class="tools">Blender · automation</p>
+            <p>A garden that monitors its own conditions and waters itself. I led a team of four, designed the prototypes in Blender, and helped build the working model.</p>
+            <p class="stack">Blender · Automation · Team lead</p>
           </div>
-        </li>
-        <li class="entry">
-          <div class="when">Dec 2024 – Jan 2025</div>
-          <div class="what">
+        </article>
+
+        <article class="project">
+          <div class="project-meta">
+            <span>Dec 2024 – Jan 2025</span>
+            <span>Tesla STEM</span>
+          </div>
+          <div class="project-body">
             <h3>Solar Charger</h3>
-            <p>A solar-powered charging station we built for school, and it's still in regular use. I modeled parts in Blender, helped install the panels, wiring, and indoor hub, and ran the marketing so people actually used it.</p>
-            <p class="tools">Blender · solar · hardware</p>
+            <p>A solar-powered charging station for our school that's still in daily use. I modeled the parts in Blender, helped install the panels, wiring, and indoor hub, and ran the marketing so students actually used it.</p>
+            <p class="stack">Blender · Solar · Hardware</p>
           </div>
-        </li>
-        <li class="entry">
-          <div class="when">Nov 2024 – Dec 2025</div>
-          <div class="what">
+        </article>
+
+        <article class="project">
+          <div class="project-meta">
+            <span>Nov 2024 – Dec 2025</span>
+            <span>Tesla STEM</span>
+          </div>
+          <div class="project-body">
             <h3>Samantha Smith Elementary Remodel</h3>
-            <p>A proposal to remodel an elementary school with green roofs, solar panels, and rainwater collection. I built the 3D models in SketchUp and made Twinmotion walkthroughs of the design.</p>
-            <p class="tools">SketchUp · Twinmotion</p>
+            <p>A proposal to remodel an elementary school with green roofs, solar panels, and rainwater collection. I built the 3D models in SketchUp and produced Twinmotion walkthroughs of the design.</p>
+            <p class="stack">SketchUp · Twinmotion · Sustainable design</p>
           </div>
-        </li>
-      </ul>
+        </article>
+      </div>
     </section>
 
     <!-- Experience -->
-    <section id="experience" class="section">
-      <h2>Experience</h2>
-      <ul class="entries">
-        <li class="entry">
-          <div class="when">Sep 2025 – 2026</div>
-          <div class="what">
-            <h3>Econ Club <span class="role">Co-lead, Tesla STEM</span></h3>
-            <ul class="points">
-              <li>Taught micro- and macroeconomics since our school didn't offer the AP classes.</li>
-              <li>Prepped students for competitions like the Wharton Investment Challenge.</li>
-              <li>Ran weekly lessons and recruiting, and grew the club to its biggest membership yet.</li>
-            </ul>
-          </div>
-        </li>
-        <li class="entry">
-          <div class="when">Jun 2025 – 2026</div>
-          <div class="what">
-            <h3>BloomWise <span class="role">Co-founder</span></h3>
-            <ul class="points">
-              <li>Taught sustainability to 1,000+ K–8 students across 9 schools.</li>
-              <li>Designed lessons on eco-friendly building and sustainable design.</li>
-              <li>Handled school outreach and worked with teachers to get the curriculum adopted.</li>
-              <li>Hosted a virtual sustainability event with 40+ people.</li>
-            </ul>
-          </div>
-        </li>
-        <li class="entry">
-          <div class="when">Jan 2025 – 2026</div>
-          <div class="what">
-            <h3>PerfectlyU <span class="role">Founder</span></h3>
-            <ul class="points">
-              <li>Came up with a virtual fitting room for online shopping.</li>
-              <li>Did the user research and market analysis.</li>
-              <li>Wrote the business plan with my team, covering branding, marketing, and revenue.</li>
-              <li>Pitched it to a live audience.</li>
-            </ul>
-          </div>
-        </li>
-        <li class="entry">
-          <div class="when">Sep 2023 – Aug 2024</div>
-          <div class="what">
-            <h3>King County Library System <span class="role">Volunteer tutor, Redmond</span></h3>
-            <ul class="points">
-              <li>Tutored elementary and middle schoolers in math and English, one on one.</li>
-              <li>Helped with reading comprehension, writing, and problem solving.</li>
-            </ul>
-          </div>
-        </li>
-        <li class="entry">
-          <div class="when">2024 – 2026</div>
-          <div class="what">
-            <h3>ACE Mentorship <span class="role">Intern, Seattle</span></h3>
-            <ul class="points">
-              <li>Worked with industry mentors on the electrical design of a building.</li>
-              <li>Laid out power distribution and lighting for efficiency and safety.</li>
-              <li>Ran load calculations to estimate the building's energy needs.</li>
-            </ul>
-          </div>
-        </li>
-        <li class="entry">
-          <div class="when">Sep – Nov 2023</div>
-          <div class="what">
-            <h3>AMpowering <span class="role">Intern</span></h3>
-            <ul class="points">
-              <li>Did a full SWOT analysis of the nonprofit with a small team.</li>
-              <li>Researched how they operate and where they could grow, and set up the collaboration.</li>
-              <li>Presented our recommendations to the organization.</li>
-            </ul>
-          </div>
-        </li>
-      </ul>
+    <section id="experience" class="section wrap">
+      <div class="section-head">
+        <h2>Experience</h2>
+        <p>Leadership, internships, and volunteering.</p>
+      </div>
+      <div class="section-body">
+        <article class="job">
+          <header>
+            <h3>Econ Club</h3>
+            <p class="job-role">Co-lead · Tesla STEM High School</p>
+            <p class="job-date">Sep 2025 – 2026</p>
+          </header>
+          <ul class="points">
+            <li>Taught micro- and macroeconomics because our school didn't offer the AP classes.</li>
+            <li>Prepared students for competitions including the Wharton Investment Challenge.</li>
+            <li>Ran weekly lessons and recruiting, and grew the club to its largest membership yet.</li>
+          </ul>
+        </article>
+
+        <article class="job">
+          <header>
+            <h3>BloomWise</h3>
+            <p class="job-role">Co-founder</p>
+            <p class="job-date">Jun 2025 – 2026</p>
+          </header>
+          <ul class="points">
+            <li>Taught sustainability to 1,000+ K–8 students across 9 schools.</li>
+            <li>Designed lessons on eco-friendly building and sustainable design.</li>
+            <li>Led school outreach and worked with teachers to get the curriculum adopted.</li>
+            <li>Hosted a virtual sustainability event with 40+ participants.</li>
+          </ul>
+        </article>
+
+        <article class="job">
+          <header>
+            <h3>PerfectlyU</h3>
+            <p class="job-role">Founder</p>
+            <p class="job-date">Jan 2025 – 2026</p>
+          </header>
+          <ul class="points">
+            <li>Developed a startup concept for a virtual fitting room for online shopping.</li>
+            <li>Ran the user research and market analysis behind the product.</li>
+            <li>Wrote the business plan with my team, covering branding, marketing, and revenue.</li>
+            <li>Pitched the company to a live audience.</li>
+          </ul>
+        </article>
+
+        <article class="job">
+          <header>
+            <h3>King County Library System</h3>
+            <p class="job-role">Volunteer tutor · Redmond, WA</p>
+            <p class="job-date">Sep 2023 – Aug 2024</p>
+          </header>
+          <ul class="points">
+            <li>Tutored elementary and middle school students one on one in math and English.</li>
+            <li>Helped with reading comprehension, writing, and problem solving.</li>
+          </ul>
+        </article>
+
+        <article class="job">
+          <header>
+            <h3>ACE Mentorship</h3>
+            <p class="job-role">Intern · Seattle, WA</p>
+            <p class="job-date">2024 – 2026</p>
+          </header>
+          <ul class="points">
+            <li>Worked with industry mentors on the electrical design of a building.</li>
+            <li>Laid out power distribution and lighting for efficiency and safety.</li>
+            <li>Ran load calculations to estimate the building's energy needs.</li>
+          </ul>
+        </article>
+
+        <article class="job">
+          <header>
+            <h3>AMpowering</h3>
+            <p class="job-role">Intern</p>
+            <p class="job-date">Sep – Nov 2023</p>
+          </header>
+          <ul class="points">
+            <li>Completed a full SWOT analysis of the nonprofit with a small team.</li>
+            <li>Researched its operations and growth opportunities, and set up the collaboration.</li>
+            <li>Presented our recommendations directly to the organization.</li>
+          </ul>
+        </article>
+      </div>
     </section>
 
     <!-- Education & skills -->
-    <section id="education" class="section">
-      <h2>Education</h2>
-      <ul class="entries">
-        <li class="entry">
-          <div class="when">Aug 2026 – now</div>
-          <div class="what"><h3>The Ohio State University</h3></div>
-        </li>
-        <li class="entry">
-          <div class="when">Sep 2022 – 2026</div>
-          <div class="what"><h3>Tesla STEM High School</h3></div>
-        </li>
-        <li class="entry">
-          <div class="when">2022 – 2024</div>
-          <div class="what">
-            <h3>DigiPen Institute of Technology</h3>
-            <p>Courses in Fire &amp; EMS (2022), Personal Finance (2023), and 3D Modeling (2024).</p>
-          </div>
-        </li>
-      </ul>
-    </section>
-
-    <section id="skills" class="section">
-      <h2>Skills</h2>
-      <dl class="skills">
-        <dt>3D &amp; design</dt><dd>Blender, SketchUp, Twinmotion</dd>
-        <dt>Other</dt><dd>Research and data analysis, project management, public speaking, networking</dd>
-        <dt>Languages</dt><dd>English and Hindi, both native</dd>
-      </dl>
+    <section id="education" class="section wrap">
+      <div class="section-head">
+        <h2>Education &amp; skills</h2>
+      </div>
+      <div class="section-body two-col">
+        <div>
+          <h3 class="col-title">Education</h3>
+          <ul class="edu">
+            <li><strong>The Ohio State University</strong><span>Aug 2026 – present</span></li>
+            <li><strong>Tesla STEM High School</strong><span>Sep 2022 – 2026</span></li>
+            <li>
+              <strong>DigiPen Institute of Technology</strong>
+              <span>Fire &amp; EMS (2022), Personal Finance (2023), 3D Modeling (2024)</span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="col-title">Skills</h3>
+          <dl class="skills">
+            <dt>3D &amp; design</dt><dd>Blender, SketchUp, Twinmotion</dd>
+            <dt>Professional</dt><dd>Research and data analysis, project management, public speaking, networking</dd>
+            <dt>Languages</dt><dd>English and Hindi (native)</dd>
+          </dl>
+        </div>
+      </div>
     </section>
 
     <!-- Contact -->
-    <section id="contact" class="section contact">
-      <h2>Say hi</h2>
-      <p>
-        I'm always up for internships, research, hackathon teams, or sustainability projects.
-        The best way to reach me is email at
-        <a href="mailto:pratulsaini1@gmail.com">pratulsaini1@gmail.com</a>, or find me on
-        <a href="https://www.linkedin.com/in/pratul-saini-226a77290" target="_blank" rel="noopener">LinkedIn</a>.
-      </p>
+    <section id="contact" class="contact">
+      <div class="wrap contact-inner">
+        <div>
+          <h2>Get in touch</h2>
+          <p>I'm looking for internships, research positions, and good hackathon teams. Email is the fastest way to reach me.</p>
+        </div>
+        <div class="contact-links">
+          <a class="contact-email" href="mailto:pratulsaini1@gmail.com">pratulsaini1@gmail.com</a>
+          <a href="https://www.linkedin.com/in/pratul-saini-226a77290" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+      </div>
     </section>
   </main>
 
-  <footer class="wrap footer">
-    <p>© <span id="year">2026</span> Pratul Saini</p>
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <p>© <span id="year">2026</span> Pratul Saini</p>
+      <p>Columbus, Ohio</p>
+    </div>
   </footer>
 
   <script>
+  (() => {
     document.getElementById('year').textContent = new Date().getFullYear();
 
+    // Theme toggle (light by default, choice is remembered)
     const root = document.documentElement;
     const toggle = document.getElementById('theme-toggle');
+    const meta = document.querySelector('meta[name="theme-color"]');
     const sync = () => {
       const dark = root.dataset.theme === 'dark';
       toggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+      meta.setAttribute('content', dark ? '#141513' : '#f6f3ec');
     };
     toggle.addEventListener('click', () => {
       const dark = root.dataset.theme !== 'dark';
@@ -263,6 +315,20 @@
       sync();
     });
     sync();
+
+    // "Résumé (PDF)" opens the print dialog; the print styles turn the page into a clean résumé
+    document.getElementById('print-resume').addEventListener('click', () => window.print());
+
+    // Highlight the nav link for the section on screen
+    const links = [...document.querySelectorAll('.nav nav a')];
+    const spy = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        links.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    ['work', 'experience', 'education', 'contact'].forEach((id) => spy.observe(document.getElementById(id)));
+  })();
   </script>
 </body>
 </html>
