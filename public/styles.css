@@ -60,7 +60,6 @@ a { color: inherit; text-decoration: none; }
 }
 .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 62px; }
 .logo { font-family: var(--mono); font-weight: 700; font-size: 1rem; color: var(--text); }
-.logo .dim { color: var(--dim); }
 .caret { color: var(--cyan); animation: blink 1.1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 .nav nav { display: flex; gap: 1.75rem; }
@@ -68,7 +67,6 @@ a { color: inherit; text-decoration: none; }
   font-family: var(--mono); font-size: 0.8rem; color: var(--muted);
   transition: color 0.15s;
 }
-.nav nav a::before { content: "/"; color: var(--dim); margin-right: 2px; }
 .nav nav a:hover { color: var(--cyan); }
 
 /* Hero */
@@ -124,7 +122,6 @@ a { color: inherit; text-decoration: none; }
 .section h2.center-h { justify-content: center; }
 .section h2.center-h::after { display: none; }
 .num { font-family: var(--mono); font-size: 0.85rem; font-weight: 500; color: var(--cyan); }
-.num::after { content: " //"; color: var(--dim); }
 
 .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 .grid.two { grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1rem 2rem; }
