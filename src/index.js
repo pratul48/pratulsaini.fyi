@@ -27,7 +27,7 @@ const PLAYLIST_NAME = 'Suggested Songs';
 const SITE_ORIGINS = ['https://pratulsaini.fyi', 'https://www.pratulsaini.fyi'];
 
 // How long each piece of data is cached, in seconds. Short for "now playing" so the page feels live.
-const TTL = { now: 3, recent: 20, topTracks: 6 * 3600, topArtists: 6 * 3600, search: 300 };
+const TTL = { now: 2, recent: 20, topTracks: 6 * 3600, topArtists: 6 * 3600, search: 300 };
 
 // Suggestion limits: per visitor (IP) and per song.
 const SUGGEST_LIMIT = { perVisitor: 3, windowSec: 600, sameSongSec: 86400 };

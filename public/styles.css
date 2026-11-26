@@ -472,6 +472,7 @@ a.row:hover strong { color: var(--accent); }
 .dock-embed-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin: 0 0 0.4rem 0.4rem; }
 .follow { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; color: var(--muted); cursor: pointer; }
 .follow input { accent-color: var(--accent); }
+.embed-note { flex: 1; font-size: 0.75rem; color: var(--faint); text-align: right; }
 #embed-target, .dock-embed iframe { display: block; width: 100%; height: 80px; border: 0; border-radius: 12px; }
 .dock-close {
   display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; flex: none;

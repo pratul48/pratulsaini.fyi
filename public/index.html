@@ -397,6 +397,7 @@
     <div class="dock-embed" id="dock-embed" hidden>
       <div class="dock-embed-head">
         <label class="follow"><input type="checkbox" id="follow" checked /> Follow along with what I'm playing</label>
+        <span class="embed-note" id="embed-note" hidden>30-second preview · log into Spotify in this browser for full songs</span>
         <button class="dock-close" id="embed-close" type="button" aria-label="Close player">×</button>
       </div>
       <div id="embed-target"></div>
@@ -552,6 +553,7 @@
 
     // ---------- Listen along (Spotify embed in the bottom bar) ----------
     const validId = (id) => typeof id === 'string' && /^[A-Za-z0-9]{22}$/.test(id);
+    let lastMode = 'idle';     // playing / paused / recent / idle
     let current = null;        // the song shown on the turntable (with live position)
     let embed = null;          // Spotify embed controller
     let embedId = null;        // song loaded in the embed
@@ -596,10 +598,11 @@
     function startSong(t, play, alreadyLoaded) {
       if (!embed || !t || !validId(t.id)) return;
       switchingUntil = Date.now() + 4000;
-      if (!alreadyLoaded && t.id !== embedId) embed.loadUri('spotify:track:' + t.id);
+      const startMs = play && t.isPlaying ? myPosition() : 0;
+      if (!alreadyLoaded && t.id !== embedId) embed.loadUri('spotify:track:' + t.id, false, Math.floor(startMs / 1000));
       embedId = t.id;
       if (!play) { pendingSeek = null; return; }
-      pendingSeek = { at: performance.now(), ms: t.isPlaying ? myPosition() : 0 };
+      pendingSeek = { at: performance.now(), ms: startMs, tries: 0 };
       embed.play();
     }
 
@@ -607,14 +610,22 @@
       const d = (e && e.data) || {};
       const playing = !d.isPaused && !d.isBuffering;
 
+      // Full songs vs 30-second previews (visitors whose browser isn't logged into Spotify).
+      if (d.duration) $('embed-note').hidden = d.duration > 35000;
+
       // Once the new song is actually playing, jump to where I am in it.
-      // Skipped for 30-second previews (visitors not logged into Spotify).
-      if (playing && pendingSeek) {
+      // Spotify sometimes ignores the first jump, so check a few times until it lands.
+      if (playing && pendingSeek && d.duration > 35000) {
         const target = pendingSeek.ms + (performance.now() - pendingSeek.at);
-        pendingSeek = null;
-        if (d.duration > 35000 && target > 3000 && target < d.duration - 5000 && Math.abs((d.position || 0) - target) > 2500) {
+        const off = Math.abs((d.position || 0) - target);
+        if (target < 3000 || target > d.duration - 5000 || off < 2500 || pendingSeek.tries >= 4) {
+          pendingSeek = null;
+        } else {
+          pendingSeek.tries++;
           embed.seek(Math.floor(target / 1000));
         }
+      } else if (playing && pendingSeek && d.duration) {
+        pendingSeek = null; // preview: nothing to sync
       }
 
       if (playing) { wantsAudio = true; return; }
@@ -721,6 +732,7 @@
     const safePlaylist = (u) => (typeof u === 'string' && u.startsWith('https://open.spotify.com/playlist/') ? u : null);
 
     function setPlayer(mode, t, statusText) {
+      lastMode = mode;
       deck.classList.toggle('playing', mode === 'playing');
       $('player').dataset.mode = mode;
       $('np-status').textContent = statusText;
@@ -839,8 +851,12 @@
       }
     }
 
-    load();
-    setInterval(() => { if (!document.hidden) load(); }, 5000);
+    // Check every 2 seconds while I'm playing music, every 10 seconds otherwise.
+    const schedule = () => setTimeout(async () => {
+      if (!document.hidden) await load();
+      schedule();
+    }, lastMode === 'playing' ? 2000 : 10000);
+    load().then(schedule);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
   })();
   </script>
