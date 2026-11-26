@@ -12,7 +12,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23161412'/><circle cx='50' cy='50' r='34' fill='none' stroke='%23332f2a' stroke-width='2'/><circle cx='50' cy='50' r='26' fill='none' stroke='%23332f2a' stroke-width='2'/><circle cx='50' cy='50' r='17' fill='%23d2462b'/><circle cx='50' cy='50' r='3' fill='%23f4efe6'/></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <!-- Apply the saved theme before the page paints. Light is the default. -->
   <script>
@@ -41,7 +41,7 @@
 
   <main id="top">
     <!-- Hero -->
-    <section class="hero wrap">
+    <section class="hero wrap" id="intro" data-track="Intro">
       <div class="hero-main">
         <p class="kicker">Student · The Ohio State University</p>
         <h1>Pratul Saini</h1>
@@ -57,76 +57,96 @@
         </div>
       </div>
 
-      <!-- Live Spotify player. Filled in by the script at the bottom. -->
+      <!-- Turntable + live now playing. Filled in by the script at the bottom. -->
       <div class="player" id="player" aria-live="polite">
-        <div class="deck" id="deck">
-          <div class="record" aria-hidden="true">
-            <div class="vinyl"><div class="label" id="label"></div></div>
+        <div class="turntable" id="deck">
+          <div class="platter" aria-hidden="true">
+            <div class="vinyl"><div class="label" id="label"><span class="label-text">PS</span></div></div>
           </div>
-          <div class="sleeve" id="sleeve">
-            <img id="sleeve-art" alt="" hidden />
-            <div class="sleeve-blank" id="sleeve-blank">
-              <span class="sleeve-vol">Vol. 1</span>
-              <span class="sleeve-ps">PS</span>
-            </div>
+          <svg class="tonearm" viewBox="0 0 70 260" aria-hidden="true">
+            <circle cx="35" cy="30" r="24" class="arm-base" />
+            <circle cx="35" cy="30" r="10" class="arm-pivot" />
+            <rect x="27" y="2" width="16" height="14" rx="3" class="arm-weight" />
+            <line x1="35" y1="30" x2="35" y2="224" class="arm-rod" />
+            <g transform="rotate(-14 35 224)">
+              <rect x="27" y="220" width="16" height="30" rx="3" class="arm-head" />
+              <rect x="31" y="244" width="8" height="8" rx="1" class="arm-stylus" />
+            </g>
+          </svg>
+          <p class="tt-brand" aria-hidden="true">PS-1200 · 33⅓ RPM</p>
+          <div class="tt-controls">
+            <span class="led" aria-hidden="true"></span>
+            <button class="tt-start" id="tt-start" type="button" aria-pressed="false">Start / Stop</button>
           </div>
         </div>
         <div class="np">
-          <p class="np-status"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span id="np-status">Checking Spotify…</span></p>
+          <p class="np-status"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="np-status">Checking Spotify…</span></p>
           <p class="np-title"><a id="np-title" target="_blank" rel="noopener">Not playing right now</a></p>
-          <p class="np-artist" id="np-artist">Check back later</p>
-          <div class="np-progress" id="np-progress" hidden>
-            <span id="np-elapsed">0:00</span>
-            <div class="bar"><div class="fill" id="np-fill"></div></div>
-            <span id="np-duration">0:00</span>
-          </div>
+          <p class="np-artist" id="np-artist">Hit Start to give it a spin</p>
         </div>
       </div>
     </section>
 
-    <!-- Awards -->
-    <section class="band" aria-labelledby="awards-h">
+    <!-- Setlist ticker -->
+    <div class="ticker" aria-label="Setlist">
+      <span class="ticker-label">Setlist</span>
+      <div class="ticker-window">
+        <div class="ticker-track">
+          <span>FeelWise</span><span>Guardian</span><span>SeaScore</span><span>GameDay Command</span><span>Smart Garden</span><span>Solar Charger</span><span>School Remodel</span><span>BloomWise</span><span>PerfectlyU</span><span>Econ Club</span>
+          <span aria-hidden="true">FeelWise</span><span aria-hidden="true">Guardian</span><span aria-hidden="true">SeaScore</span><span aria-hidden="true">GameDay Command</span><span aria-hidden="true">Smart Garden</span><span aria-hidden="true">Solar Charger</span><span aria-hidden="true">School Remodel</span><span aria-hidden="true">BloomWise</span><span aria-hidden="true">PerfectlyU</span><span aria-hidden="true">Econ Club</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Awards as record plaques -->
+    <section class="band" id="awards" data-track="Awards" aria-labelledby="awards-h">
       <div class="wrap">
-        <h2 id="awards-h" class="band-title">Hackathon awards</h2>
+        <div class="band-head">
+          <h2 id="awards-h">Hackathon awards</h2>
+          <p>On the wall so far.</p>
+        </div>
         <div class="awards">
           <article class="award">
-            <div class="disc gold" aria-hidden="true"><span>1st</span></div>
-            <div>
-              <p class="event">HackByte 2026 · 1st place</p>
-              <h3>FeelWise</h3>
-              <p>An AI platform that turns raw, unstructured emotional input into clear psychological insights and next steps.</p>
+            <div class="plaque gold" aria-hidden="true">
+              <div class="plaque-disc"><span>1st</span></div>
+              <p class="plate">FeelWise<small>HackByte 2026</small></p>
             </div>
+            <p class="event">HackByte 2026 · 1st place</p>
+            <h3>FeelWise</h3>
+            <p>An AI platform that turns raw, unstructured emotional input into clear psychological insights and next steps.</p>
           </article>
           <article class="award">
-            <div class="disc bronze" aria-hidden="true"><span>3rd</span></div>
-            <div>
-              <p class="event">MHacks 2026 · Capital One track</p>
-              <h3>Guardian</h3>
-              <p>An autonomous agent that checks itemized hospital bills against patient records, calls billing departments to dispute overcharges, and texts you when the refund lands.</p>
+            <div class="plaque bronze" aria-hidden="true">
+              <div class="plaque-disc"><span>3rd</span></div>
+              <p class="plate">Guardian<small>MHacks 2026</small></p>
             </div>
+            <p class="event">MHacks 2026 · 3rd place, Capital One track</p>
+            <h3>Guardian</h3>
+            <p>An autonomous agent that checks itemized hospital bills against patient records, calls billing departments to dispute overcharges, and texts you when the refund lands.</p>
           </article>
           <article class="award">
-            <div class="disc hm" aria-hidden="true"><span>HM</span></div>
-            <div>
-              <p class="event">HackByte 2025 · Honorable mention</p>
-              <h3>SeaScore</h3>
-              <p>A sustainability web app that turns everyday eco-actions into points to help cut ocean waste.</p>
+            <div class="plaque silver" aria-hidden="true">
+              <div class="plaque-disc"><span>HM</span></div>
+              <p class="plate">SeaScore<small>HackByte 2025</small></p>
             </div>
+            <p class="event">HackByte 2025 · Honorable mention</p>
+            <h3>SeaScore</h3>
+            <p>A sustainability web app that turns everyday eco-actions into points to help cut ocean waste.</p>
           </article>
         </div>
       </div>
     </section>
 
     <!-- Work -->
-    <section id="work" class="section wrap">
+    <section id="work" class="section wrap" data-track="Side A · Selected work">
       <div class="section-head">
-        <p class="side">Side A</p>
+        <p class="side" data-letter="A">Side A</p>
         <h2>Selected work</h2>
         <p>Things I've built or designed, newest first.</p>
       </div>
       <div class="tracklist">
         <article class="track">
-          <span class="no">A1</span>
+          <span class="no"><span class="no-num">A1</span><span class="no-play" aria-hidden="true">▶</span><span class="no-eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
           <h3>GameDay Command</h3>
           <span class="time">Nov 2026</span>
           <div class="track-body">
@@ -140,7 +160,7 @@
           </div>
         </article>
         <article class="track">
-          <span class="no">A2</span>
+          <span class="no"><span class="no-num">A2</span><span class="no-play" aria-hidden="true">▶</span><span class="no-eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
           <h3>Smart Garden</h3>
           <span class="time">Mar – Apr 2025</span>
           <div class="track-body">
@@ -149,7 +169,7 @@
           </div>
         </article>
         <article class="track">
-          <span class="no">A3</span>
+          <span class="no"><span class="no-num">A3</span><span class="no-play" aria-hidden="true">▶</span><span class="no-eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
           <h3>Solar Charger</h3>
           <span class="time">Dec 2024 – Jan 2025</span>
           <div class="track-body">
@@ -158,7 +178,7 @@
           </div>
         </article>
         <article class="track">
-          <span class="no">A4</span>
+          <span class="no"><span class="no-num">A4</span><span class="no-play" aria-hidden="true">▶</span><span class="no-eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
           <h3>Samantha Smith Elementary Remodel</h3>
           <span class="time">Nov 2024 – Dec 2025</span>
           <div class="track-body">
@@ -170,15 +190,15 @@
     </section>
 
     <!-- Experience -->
-    <section id="experience" class="section wrap">
+    <section id="experience" class="section wrap" data-track="Side B · Experience">
       <div class="section-head">
-        <p class="side">Side B</p>
+        <p class="side" data-letter="B">Side B</p>
         <h2>Experience</h2>
         <p>Leadership, internships, and volunteering.</p>
       </div>
       <div class="tracklist">
         <article class="track">
-          <span class="no">B1</span>
+          <span class="no"><span class="no-num">B1</span><span class="no-play" aria-hidden="true">▶</span><span class="no-eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
           <h3>Econ Club</h3>
           <span class="time">Sep 2025 – 2026</span>
           <div class="track-body">
@@ -191,7 +211,7 @@
           </div>
         </article>
         <article class="track">
-          <span class="no">B2</span>
+          <span class="no"><span class="no-num">B2</span><span class="no-play" aria-hidden="true">▶</span><span class="no-eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
           <h3>BloomWise</h3>
           <span class="time">Jun 2025 – 2026</span>
           <div class="track-body">
@@ -205,7 +225,7 @@
           </div>
         </article>
         <article class="track">
-          <span class="no">B3</span>
+          <span class="no"><span class="no-num">B3</span><span class="no-play" aria-hidden="true">▶</span><span class="no-eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
           <h3>PerfectlyU</h3>
           <span class="time">Jan 2025 – 2026</span>
           <div class="track-body">
@@ -219,7 +239,7 @@
           </div>
         </article>
         <article class="track">
-          <span class="no">B4</span>
+          <span class="no"><span class="no-num">B4</span><span class="no-play" aria-hidden="true">▶</span><span class="no-eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
           <h3>King County Library System</h3>
           <span class="time">Sep 2023 – Aug 2024</span>
           <div class="track-body">
@@ -231,7 +251,7 @@
           </div>
         </article>
         <article class="track">
-          <span class="no">B5</span>
+          <span class="no"><span class="no-num">B5</span><span class="no-play" aria-hidden="true">▶</span><span class="no-eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
           <h3>ACE Mentorship</h3>
           <span class="time">2024 – 2026</span>
           <div class="track-body">
@@ -244,7 +264,7 @@
           </div>
         </article>
         <article class="track">
-          <span class="no">B6</span>
+          <span class="no"><span class="no-num">B6</span><span class="no-play" aria-hidden="true">▶</span><span class="no-eq" aria-hidden="true"><i></i><i></i><i></i></span></span>
           <h3>AMpowering</h3>
           <span class="time">Sep – Nov 2023</span>
           <div class="track-body">
@@ -259,10 +279,10 @@
       </div>
     </section>
 
-    <!-- Listening (hidden until Spotify data loads) -->
-    <section id="listening" class="section full wrap" hidden>
+    <!-- Listening (hidden until listening data loads) -->
+    <section id="listening" class="section full wrap" data-track="On repeat" hidden>
       <div class="section-head">
-        <p class="side">On repeat</p>
+        <p class="side" data-letter="♪">On repeat</p>
         <h2>What I'm listening to</h2>
         <p>Pulled live from my Spotify listening history. Top picks cover the last month.</p>
       </div>
@@ -283,41 +303,50 @@
     </section>
 
     <!-- Education & skills -->
-    <section id="education" class="section wrap">
+    <section id="education" class="section wrap" data-track="Liner notes">
       <div class="section-head">
-        <p class="side">Liner notes</p>
+        <p class="side" data-letter="i">Liner notes</p>
         <h2>Education &amp; skills</h2>
       </div>
       <div class="two-col">
         <div>
           <h3 class="col-title">Education</h3>
           <ul class="credits">
-            <li><strong>The Ohio State University</strong><span>Aug 2026 – present</span></li>
-            <li><strong>Tesla STEM High School</strong><span>Sep 2022 – 2026</span></li>
-            <li><strong>DigiPen Institute of Technology</strong><span>Fire &amp; EMS (2022), Personal Finance (2023), 3D Modeling (2024)</span></li>
+            <li><strong>The Ohio State University</strong><span class="dots"></span><span class="val">Aug 2026 – present</span></li>
+            <li><strong>Tesla STEM High School</strong><span class="dots"></span><span class="val">Sep 2022 – 2026</span></li>
+            <li><strong>DigiPen Institute of Technology</strong><span class="dots"></span><span class="val">Fire &amp; EMS, Personal Finance, 3D Modeling (2022–2024)</span></li>
           </ul>
         </div>
         <div>
           <h3 class="col-title">Credits</h3>
           <ul class="credits">
-            <li><strong>3D &amp; design</strong><span>Blender, SketchUp, Twinmotion</span></li>
-            <li><strong>Professional</strong><span>Research and data analysis, project management, public speaking, networking</span></li>
-            <li><strong>Languages</strong><span>English and Hindi (native)</span></li>
+            <li><strong>3D &amp; design</strong><span class="dots"></span><span class="val">Blender, SketchUp, Twinmotion</span></li>
+            <li><strong>Professional</strong><span class="dots"></span><span class="val">Research and data analysis, project management, public speaking, networking</span></li>
+            <li><strong>Languages</strong><span class="dots"></span><span class="val">English and Hindi (native)</span></li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- Contact -->
-    <section id="contact" class="contact">
-      <div class="wrap contact-inner">
-        <div>
-          <h2>Get in touch</h2>
-          <p>I'm looking for internships, research positions, and good hackathon teams. Song recommendations are welcome too. Email is the fastest way to reach me.</p>
-        </div>
-        <div class="contact-links">
-          <a class="contact-email" href="mailto:pratulsaini1@gmail.com">pratulsaini1@gmail.com</a>
-          <a href="https://www.linkedin.com/in/pratul-saini-226a77290" target="_blank" rel="noopener">LinkedIn ↗</a>
+    <!-- Contact as a concert ticket -->
+    <section id="contact" class="contact" data-track="Encore · Get in touch">
+      <div class="wrap">
+        <div class="ticket">
+          <div class="ticket-main">
+            <p class="ticket-top"><span>Admit one</span><span>Pratul Saini · Live in Columbus</span></p>
+            <h2>Get in touch</h2>
+            <p class="ticket-copy">I'm looking for internships, research positions, and good hackathon teams. Song recommendations are welcome too. Email is the fastest way to reach me.</p>
+            <div class="ticket-links">
+              <a class="ticket-email" href="mailto:pratulsaini1@gmail.com">pratulsaini1@gmail.com</a>
+              <a href="https://www.linkedin.com/in/pratul-saini-226a77290" target="_blank" rel="noopener">LinkedIn ↗</a>
+            </div>
+          </div>
+          <div class="ticket-stub" aria-hidden="true">
+            <span>No. 0001</span>
+            <strong>Encore</strong>
+            <span>All ages</span>
+            <span class="barcode"></span>
+          </div>
         </div>
       </div>
     </section>
@@ -325,18 +354,40 @@
 
   <footer class="footer">
     <div class="wrap footer-inner">
-      <p>© <span id="year">2026</span> Pratul Saini</p>
-      <p>Columbus, Ohio</p>
+      <p>© <span id="year">2026</span> Pratul Saini. Produced and mixed by Pratul Saini.</p>
+      <p>Recorded in Columbus, Ohio</p>
     </div>
   </footer>
 
+  <!-- Page player: the page as a song -->
+  <div class="dock" id="dock" aria-label="Page player">
+    <div class="dock-buttons">
+      <button class="dock-btn" id="dock-prev" type="button" aria-label="Previous section">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 5v14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M19 5.5v13L9 12z" fill="currentColor"/></svg>
+      </button>
+      <button class="dock-btn" id="dock-next" type="button" aria-label="Next section">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M18 5v14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M5 5.5v13L15 12z" fill="currentColor"/></svg>
+      </button>
+    </div>
+    <div class="dock-main">
+      <p class="dock-title"><span class="dock-label">Now reading</span><span id="dock-side">Intro</span></p>
+      <div class="dock-progress">
+        <span id="dock-elapsed">0:00</span>
+        <div class="dock-bar" id="dock-bar" aria-hidden="true"><div class="dock-fill" id="dock-fill"></div></div>
+        <span id="dock-total">0:00</span>
+      </div>
+    </div>
+    <p class="dock-live" id="dock-live" hidden><span class="eq on" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="dock-song"></span></p>
+  </div>
+
   <script>
   (() => {
-    document.getElementById('year').textContent = new Date().getFullYear();
+    const $ = (id) => document.getElementById(id);
+    $('year').textContent = new Date().getFullYear();
 
     // ---------- Theme toggle (light by default, choice is remembered) ----------
     const root = document.documentElement;
-    const toggle = document.getElementById('theme-toggle');
+    const toggle = $('theme-toggle');
     const meta = document.querySelector('meta[name="theme-color"]');
     const syncTheme = () => {
       const dark = root.dataset.theme === 'dark';
@@ -352,7 +403,7 @@
     syncTheme();
 
     // "Résumé (PDF)" opens the print dialog; print styles turn the page into a clean résumé.
-    document.getElementById('print-resume').addEventListener('click', () => window.print());
+    $('print-resume').addEventListener('click', () => window.print());
 
     // Underline the nav link for the section on screen.
     const links = [...document.querySelectorAll('.nav nav a')];
@@ -362,14 +413,79 @@
         links.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
-    ['work', 'experience', 'listening', 'contact'].forEach((id) => spy.observe(document.getElementById(id)));
+    ['work', 'experience', 'listening', 'contact'].forEach((id) => spy.observe($(id)));
 
-    // ---------- Spotify ----------
-    const $ = (id) => document.getElementById(id);
+    // The tracklist row you're reading gets the "now playing" bars.
+    const rows = [...document.querySelectorAll('.track')];
+    const rowSpy = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) rows.forEach((r) => r.classList.toggle('current', r === e.target)); });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    rows.forEach((r) => rowSpy.observe(r));
+
+    // ---------- Turntable ----------
     const deck = $('deck');
+    const startBtn = $('tt-start');
+    let manual = false;
+    startBtn.addEventListener('click', () => {
+      manual = !manual;
+      deck.classList.toggle('manual', manual);
+      startBtn.setAttribute('aria-pressed', String(manual));
+    });
+
+    // ---------- Page player (dock) ----------
+    const dock = $('dock');
+    const sections = [...document.querySelectorAll('[data-track]')];
+    const fmt = (ms) => { const s = Math.max(0, Math.floor(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+    const words = (document.querySelector('main').innerText || '').split(/\s+/).length;
+    const totalMs = Math.max(60, Math.round((words / 220) * 60)) * 1000; // reading time
+    $('dock-total').textContent = fmt(totalMs);
+
+    const visibleSections = () => sections.filter((s) => !s.hidden);
+    const currentIndex = () => {
+      const list = visibleSections();
+      let idx = 0;
+      list.forEach((s, i) => { if (s.getBoundingClientRect().top <= innerHeight * 0.35) idx = i; });
+      return idx;
+    };
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const max = document.documentElement.scrollHeight - innerHeight;
+        const p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+        $('dock-fill').style.width = (p * 100).toFixed(2) + '%';
+        $('dock-elapsed').textContent = fmt(p * totalMs);
+        dock.classList.toggle('show', scrollY > 320);
+        $('dock-side').textContent = visibleSections()[currentIndex()].dataset.track;
+      });
+    };
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll);
+    onScroll();
+
+    const go = (el) => el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('dock-next').addEventListener('click', () => {
+      const list = visibleSections(); const i = currentIndex();
+      if (i < list.length - 1) go(list[i + 1]);
+    });
+    $('dock-prev').addEventListener('click', () => {
+      const list = visibleSections(); const i = currentIndex();
+      // Like a music player: first press restarts the current section, second goes back one.
+      if (list[i].getBoundingClientRect().top < -60) go(list[i]);
+      else if (i > 0) go(list[i - 1]);
+      else scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    $('dock-bar').addEventListener('click', (e) => {
+      const r = e.currentTarget.getBoundingClientRect();
+      const max = document.documentElement.scrollHeight - innerHeight;
+      scrollTo({ top: ((e.clientX - r.left) / r.width) * max, behavior: 'smooth' });
+    });
+
+    // ---------- Live listening (Spotify history via Last.fm) ----------
     const safeUrl = (u) => (typeof u === 'string' && u.startsWith('https://open.spotify.com/') ? u : null);
     const safeImg = (u) => (typeof u === 'string' && u.startsWith('https://') ? u : null);
-    const fmt = (ms) => { const s = Math.max(0, Math.floor(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
     const ago = (iso) => {
       const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
       if (!isFinite(m)) return '';
@@ -394,9 +510,6 @@
       return img;
     };
 
-    let ticker = null;
-    let progress = { base: 0, at: 0, duration: 0 };
-
     function setPlayer(mode, t, statusText) {
       deck.classList.toggle('playing', mode === 'playing');
       $('player').dataset.mode = mode;
@@ -406,36 +519,15 @@
       title.textContent = t ? t.name : 'Not playing right now';
       const href = t && safeUrl(t.url);
       if (href) title.href = href; else title.removeAttribute('href');
-      $('np-artist').textContent = t ? t.artists : 'Check back later';
+      $('np-artist').textContent = t ? t.artists : 'Hit Start to give it a spin';
 
       const img = safeImg(t && t.image);
-      const sleeveArt = $('sleeve-art');
-      if (img) {
-        sleeveArt.src = img; sleeveArt.hidden = false; $('sleeve-blank').hidden = true;
-        $('label').style.backgroundImage = 'url("' + img.replace(/"/g, '%22') + '")';
-      } else {
-        sleeveArt.hidden = true; $('sleeve-blank').hidden = false;
-        $('label').style.backgroundImage = '';
-      }
-    }
+      $('label').style.backgroundImage = img ? 'url("' + img.replace(/"/g, '%22') + '")' : '';
+      $('label').classList.toggle('has-art', Boolean(img));
 
-    function startProgress(now) {
-      clearInterval(ticker);
-      const bar = $('np-progress');
-      if (!now || !now.durationMs) { bar.hidden = true; return; }
-      bar.hidden = false;
-      progress = { base: now.progressMs, at: Date.now(), duration: now.durationMs };
-      const draw = () => {
-        const p = now.isPlaying ? progress.base + (Date.now() - progress.at) : progress.base;
-        const clamped = Math.min(p, progress.duration);
-        $('np-elapsed').textContent = fmt(clamped);
-        $('np-duration').textContent = fmt(progress.duration);
-        $('np-fill').style.width = (clamped / progress.duration * 100).toFixed(2) + '%';
-        // Song ended: fetch the next one, once.
-        if (now.isPlaying && !now.reloaded && p > progress.duration + 3000) { now.reloaded = true; load(); }
-      };
-      draw();
-      if (now.isPlaying) ticker = setInterval(draw, 1000);
+      const live = mode === 'playing' && t;
+      $('dock-live').hidden = !live;
+      if (live) $('dock-song').textContent = t.name + ' — ' + t.artists;
     }
 
     function renderLists(data) {
@@ -456,12 +548,13 @@
         return li;
       };
 
-      (data.topTracks || []).forEach((t) => tracks.append(row(t, t.artists)));
+      (data.topTracks || []).forEach((t) => tracks.append(row(t, t.artists, t.plays ? t.plays + ' plays' : null)));
       (data.topArtists || []).forEach((a) => artists.append(row(a, a.detail || 'Artist', null, true)));
       (data.recent || []).slice(0, 5).forEach((t) => recent.append(row(t, t.artists, ago(t.playedAt))));
 
       const any = (data.topTracks || []).length || (data.topArtists || []).length || (data.recent || []).length;
       $('listening').hidden = !any;
+      onScroll();
     }
 
     async function load() {
@@ -473,14 +566,11 @@
         const now = data.now;
         const last = (data.recent || [])[0];
         if (now && now.isPlaying) setPlayer('playing', now, 'Listening now');
-        else if (now) setPlayer('paused', now, 'Paused on Spotify');
         else if (last) setPlayer('recent', last, 'Last played ' + ago(last.playedAt));
-        else setPlayer('idle', null, 'Spotify');
-        startProgress(now);
+        else setPlayer('idle', null, 'Not listening right now');
         renderLists(data);
       } catch (e) {
         setPlayer('idle', null, 'Not listening right now');
-        startProgress(null);
       }
     }
 
