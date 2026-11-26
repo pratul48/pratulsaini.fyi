@@ -264,7 +264,7 @@
       <div class="section-head">
         <p class="side">On repeat</p>
         <h2>What I'm listening to</h2>
-        <p>Pulled live from my Spotify. Top picks cover the last four weeks.</p>
+        <p>Pulled live from my Spotify listening history. Top picks cover the last month.</p>
       </div>
       <div class="listening">
         <div>
@@ -457,7 +457,7 @@
       };
 
       (data.topTracks || []).forEach((t) => tracks.append(row(t, t.artists)));
-      (data.topArtists || []).forEach((a) => artists.append(row(a, (a.genres || []).join(', ') || 'Artist', null, true)));
+      (data.topArtists || []).forEach((a) => artists.append(row(a, a.detail || 'Artist', null, true)));
       (data.recent || []).slice(0, 5).forEach((t) => recent.append(row(t, t.artists, ago(t.playedAt))));
 
       const any = (data.topTracks || []).length || (data.topArtists || []).length || (data.recent || []).length;
@@ -472,7 +472,7 @@
 
         const now = data.now;
         const last = (data.recent || [])[0];
-        if (now && now.isPlaying) setPlayer('playing', now, 'Listening now on Spotify');
+        if (now && now.isPlaying) setPlayer('playing', now, 'Listening now');
         else if (now) setPlayer('paused', now, 'Paused on Spotify');
         else if (last) setPlayer('recent', last, 'Last played ' + ago(last.playedAt));
         else setPlayer('idle', null, 'Spotify');
