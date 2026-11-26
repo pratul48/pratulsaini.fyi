@@ -80,7 +80,7 @@
           </div>
         </div>
         <div class="np">
-          <p class="np-status"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="np-status">Checking Spotify…</span></p>
+          <p class="np-status"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="np-status">Loading…</span></p>
           <p class="np-title"><a id="np-title" target="_blank" rel="noopener">Not playing right now</a></p>
           <p class="np-artist" id="np-artist">Hit Start to give it a spin</p>
         </div>
@@ -557,11 +557,17 @@
       onScroll();
     }
 
+    let loading = false;
     async function load() {
+      if (loading) return;
+      loading = true;
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 10000);
       try {
-        const res = await fetch('/api/spotify', { headers: { Accept: 'application/json' } });
+        const res = await fetch('/api/spotify?t=' + Date.now(), { headers: { Accept: 'application/json' }, cache: 'no-store', signal: ctrl.signal });
         const data = await res.json();
-        if (!data.configured || data.error) throw new Error('offline');
+        if (!data.configured) throw new Error('not set up');
+        if (data.error) throw new Error(data.reason || 'Last.fm error');
 
         const now = data.now;
         const last = (data.recent || [])[0];
@@ -570,7 +576,11 @@
         else setPlayer('idle', null, 'Not listening right now');
         renderLists(data);
       } catch (e) {
+        console.warn('Listening data unavailable:', e && e.message);
         setPlayer('idle', null, 'Not listening right now');
+      } finally {
+        clearTimeout(timer);
+        loading = false;
       }
     }
 
