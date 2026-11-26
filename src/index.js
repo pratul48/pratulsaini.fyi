@@ -37,13 +37,26 @@ export default {
 async function listening(env, ctx) {
   if (!env.LASTFM_API_KEY || !env.LASTFM_USER) return json({ configured: false }, 'public, max-age=60');
 
-  const [recentData, topTracks, topArtists] = await Promise.all([
+  // Load each part on its own, so one failed Last.fm call doesn't blank the whole section.
+  const results = await Promise.allSettled([
     cached(ctx, 'recent', TTL.recent, () => recentTracks(env)),
     cached(ctx, 'top-tracks', TTL.topTracks, () => topTrackList(env)),
     cached(ctx, 'top-artists', TTL.topArtists, () => topArtistList(env)),
   ]);
+  const [recentRes, tracksRes, artistsRes] = results;
+  const failed = results.filter((r) => r.status === 'rejected');
+  if (failed.length === results.length) throw failed[0].reason;
+  failed.forEach((r) => console.error('partial listening error', r.reason && r.reason.message));
 
-  return json({ configured: true, fetchedAt: Date.now(), ...recentData, topTracks, topArtists }, 'public, max-age=15');
+  const recentData = recentRes.status === 'fulfilled' ? recentRes.value : { now: null, recent: [] };
+  return json({
+    configured: true,
+    fetchedAt: Date.now(),
+    ...recentData,
+    topTracks: tracksRes.status === 'fulfilled' ? tracksRes.value : [],
+    topArtists: artistsRes.status === 'fulfilled' ? artistsRes.value : [],
+    ...(failed.length ? { partial: true } : {}),
+  }, failed.length ? 'no-store' : 'public, max-age=15');
 }
 
 // ---------- Last.fm calls ----------
@@ -104,10 +117,15 @@ async function topArtistList(env) {
 
 async function lastfm(env, method, params) {
   const qs = new URLSearchParams({ method, user: env.LASTFM_USER, api_key: env.LASTFM_API_KEY, format: 'json', ...params });
-  const res = await fetch(`${API}?${qs}`, { headers: { 'User-Agent': 'pratulsaini.fyi' } });
-  const data = await res.json().catch(() => null);
-  if (!res.ok || !data || data.error) throw new Error(`last.fm ${method} failed: ${data?.message || res.status}`);
-  return data;
+  // Last.fm sometimes returns a temporary error (8 = "backend failed", 11 = offline, 16 = temporary). Retry those.
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(`${API}?${qs}`, { headers: { 'User-Agent': 'pratulsaini.fyi (+https://pratulsaini.fyi)' } });
+    const data = await res.json().catch(() => null);
+    if (res.ok && data && !data.error) return data;
+    const temporary = !data || [8, 11, 16, 29].includes(data.error) || res.status >= 500;
+    if (temporary && attempt < 2) { await new Promise((r) => setTimeout(r, 400 * (attempt + 1))); continue; }
+    throw new Error(`last.fm ${method} failed: ${data?.message || res.status}`);
+  }
 }
 
 // ---------- Helpers ----------
