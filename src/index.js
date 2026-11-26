@@ -1,182 +1,143 @@
 // Cloudflare Worker for pratulsaini.fyi
 //
-// Serves the static site from ./public and adds one API route:
-//   GET /api/spotify -> now playing, recently played, top tracks, top artists (JSON)
-//
-// The data comes from Last.fm, which logs ("scrobbles") everything played on Spotify.
-// That works on a free Spotify account, unlike Spotify's own API, which now requires Premium.
+// Serves the static site from ./public and adds a small Spotify API:
+//   GET /api/spotify           -> now playing, recently played, top tracks, top artists (JSON)
+//   GET /api/spotify/login     -> one-time setup: sends you to Spotify to approve access
+//   GET /api/spotify/callback  -> one-time setup: shows the refresh token to save as a secret
 //
 // Secrets (set with `npx wrangler secret put NAME`):
-//   LASTFM_API_KEY  - free key from https://www.last.fm/api/account/create
-//   LASTFM_USER     - your Last.fm username
+//   SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REFRESH_TOKEN
+//
+// The setup routes switch themselves off once SPOTIFY_REFRESH_TOKEN is set.
 
-const API = 'https://ws.audioscrobbler.com/2.0/';
+const SCOPES = 'user-read-currently-playing user-read-recently-played user-top-read';
+const API = 'https://api.spotify.com/v1';
+const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 
-// How long each piece of data is cached, in seconds.
-const TTL = { recent: 30, topTracks: 6 * 3600, topArtists: 6 * 3600 };
+// How long each piece of data is cached, in seconds. Keeps us well under Spotify's quota.
+const TTL = { now: 30, recent: 120, topTracks: 6 * 3600, topArtists: 6 * 3600 };
 
-// Last.fm returns this grey star image when it has no real artwork.
-const PLACEHOLDER = '2a96cbd8b46e442fc41c2b86b821562f';
+let accessToken = { value: null, expiresAt: 0 };
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, rawEnv, ctx) {
+    const env = cleanEnv(rawEnv);
     const url = new URL(request.url);
-    if (request.method === 'GET' && url.pathname === '/api/spotify') {
-      try {
-        return await listening(cleanEnv(env), ctx);
-      } catch (err) {
-        console.error('listening error', err && err.message);
-        // Last.fm's message (like "User not found") is safe to show and makes setup problems easy to spot.
-        return json({ configured: true, error: true, reason: String((err && err.message) || 'unknown') }, 'no-store');
-      }
+    if (request.method !== 'GET') return env.ASSETS.fetch(request);
+
+    try {
+      if (url.pathname === '/api/spotify') return await listening(env, ctx);
+      if (url.pathname === '/api/spotify/login') return login(url, env);
+      if (url.pathname === '/api/spotify/callback') return await callback(request, url, env);
+    } catch (err) {
+      console.error('spotify error', err && err.message);
+      return json({ configured: true, error: true, reason: String((err && err.message) || 'unknown') }, 200, 'no-store');
     }
     return env.ASSETS.fetch(request);
   },
 };
 
+// ---------- Public listening data ----------
+
 async function listening(env, ctx) {
-  if (!env.LASTFM_API_KEY || !env.LASTFM_USER) return json({ configured: false }, 'public, max-age=60');
+  if (!env.SPOTIFY_CLIENT_ID || !env.SPOTIFY_CLIENT_SECRET || !env.SPOTIFY_REFRESH_TOKEN) {
+    return json({ configured: false }, 200, 'public, max-age=60');
+  }
+  // Only fetch a token if something isn't cached, and share one token across the requests.
+  let tokenPromise;
+  const token = () => (tokenPromise ||= getAccessToken(env));
 
-  // Load each part on its own, so one failed Last.fm call doesn't blank the whole section.
-  const results = await Promise.allSettled([
-    cached(ctx, 'recent', TTL.recent, () => recentTracks(env)),
-    cached(ctx, 'top-tracks', TTL.topTracks, () => topTrackList(env)),
-    cached(ctx, 'top-artists', TTL.topArtists, () => topArtistList(env)),
+  const [now, recent, topTracks, topArtists] = await Promise.all([
+    cached(ctx, 'now', TTL.now, async () => nowPlaying(await token())),
+    cached(ctx, 'recent', TTL.recent, async () => recentlyPlayed(await token())),
+    cached(ctx, 'top-tracks', TTL.topTracks, async () => topItems(await token(), 'tracks')),
+    cached(ctx, 'top-artists', TTL.topArtists, async () => topItems(await token(), 'artists')),
   ]);
-  const [recentRes, tracksRes, artistsRes] = results;
-  const failed = results.filter((r) => r.status === 'rejected');
-  if (failed.length === results.length) throw failed[0].reason;
-  failed.forEach((r) => console.error('partial listening error', r.reason && r.reason.message));
 
-  const recentData = recentRes.status === 'fulfilled' ? recentRes.value : { now: null, recent: [] };
-  return json({
-    configured: true,
-    fetchedAt: Date.now(),
-    ...recentData,
-    topTracks: tracksRes.status === 'fulfilled' ? tracksRes.value : [],
-    topArtists: artistsRes.status === 'fulfilled' ? artistsRes.value : [],
-    ...(failed.length ? { partial: true } : {}),
-  }, failed.length ? 'no-store' : 'public, max-age=15');
+  return json({ configured: true, fetchedAt: Date.now(), now, recent, topTracks, topArtists }, 200, 'public, max-age=15');
 }
 
-// ---------- Last.fm calls ----------
-
-async function recentTracks(env) {
-  // Last.fm sometimes fails one form of this request for a new account but answers another.
-  // Try a few variations before giving up.
-  const variants = [
-    [env, { limit: '7' }],
-    [env, { limit: '7', extended: '1' }],
-    [{ ...env, LASTFM_USER: env.LASTFM_USER.toLowerCase() }, { limit: '10', page: '1' }],
-  ];
-  let data, lastErr;
-  for (const [e, params] of variants) {
-    try { data = await lastfm(e, 'user.getrecenttracks', params); break; } catch (err) { lastErr = err; }
-  }
-  if (!data) throw lastErr;
-  const items = asArray(data?.recenttracks?.track);
-
-  let now = null;
-  const recent = [];
-  for (const t of items) {
-    const item = {
-      name: t.name || '',
-      artists: t.artist?.['#text'] || t.artist?.name || '',
-      album: t.album?.['#text'] || '',
-      image: pickImage(t.image),
-    };
-    item.url = spotifySearch(item.name, item.artists);
-    if (t['@attr']?.nowplaying === 'true') {
-      now = { ...item, isPlaying: true, progressMs: 0, durationMs: 0 };
-    } else if (t.date?.uts) {
-      recent.push({ ...item, playedAt: new Date(Number(t.date.uts) * 1000).toISOString() });
-    }
-  }
-  return { now, recent: recent.slice(0, 6) };
+async function nowPlaying(token) {
+  const data = await spotifyGet('/me/player/currently-playing', token);
+  if (!data || !data.item || data.currently_playing_type !== 'track') return null;
+  return {
+    ...track(data.item),
+    isPlaying: Boolean(data.is_playing),
+    progressMs: data.progress_ms || 0,
+    durationMs: data.item.duration_ms || 0,
+  };
 }
 
-async function topTrackList(env) {
-  const data = await lastfm(env, 'user.gettoptracks', { period: '1month', limit: '5' });
-  const items = asArray(data?.toptracks?.track);
-  // Top-track results have no artwork, so look up each track's album cover.
-  return Promise.all(items.map(async (t) => {
-    const name = t.name || '';
-    const artist = t.artist?.name || '';
-    let image = pickImage(t.image);
-    if (!image) {
-      try {
-        const info = await lastfm(env, 'track.getInfo', { track: name, artist, autocorrect: '1' });
-        image = pickImage(info?.track?.album?.image);
-      } catch { /* no artwork is fine */ }
-    }
-    return { name, artists: artist, image, url: spotifySearch(name, artist), plays: Number(t.playcount) || 0 };
+async function recentlyPlayed(token) {
+  const data = await spotifyGet('/me/player/recently-played?limit=6', token);
+  return (data?.items || []).map((i) => ({ ...track(i.track), playedAt: i.played_at }));
+}
+
+async function topItems(token, type) {
+  const data = await spotifyGet(`/me/top/${type}?limit=5&time_range=short_term`, token);
+  const items = data?.items || [];
+  if (type === 'tracks') return items.map(track);
+  return items.map((a) => ({
+    name: a.name,
+    detail: (a.genres || []).slice(0, 2).join(', ') || 'Artist',
+    image: pickImage(a.images),
+    url: a.external_urls?.spotify || null,
   }));
 }
 
-async function topArtistList(env) {
-  const data = await lastfm(env, 'user.gettopartists', { period: '1month', limit: '5' });
-  return asArray(data?.topartists?.artist).map((a) => {
-    const plays = Number(a.playcount) || 0;
-    return {
-      name: a.name || '',
-      detail: `${plays.toLocaleString('en-US')} ${plays === 1 ? 'play' : 'plays'}`,
-      image: pickImage(a.image),
-      url: spotifySearch(a.name || ''),
-    };
-  });
+// Keep only what the page needs.
+function track(t) {
+  return {
+    name: t?.name || '',
+    artists: (t?.artists || []).map((a) => a.name).join(', '),
+    album: t?.album?.name || '',
+    image: pickImage(t?.album?.images),
+    url: t?.external_urls?.spotify || null,
+  };
 }
 
-async function lastfm(env, method, params) {
-  const qs = new URLSearchParams({ method, user: env.LASTFM_USER, api_key: env.LASTFM_API_KEY, format: 'json', ...params });
-  // Retry once on temporary errors. Error 8 isn't retried: Last.fm also returns it for accounts with no scrobbles yet.
-  for (let attempt = 0; ; attempt++) {
-    let res, data;
-    try {
-      // Give up on a slow Last.fm call after 4 seconds so the page never hangs.
-      res = await fetch(`${API}?${qs}`, { headers: { 'User-Agent': 'pratulsaini.fyi (+https://pratulsaini.fyi)' }, signal: AbortSignal.timeout(4000) });
-      data = await res.json().catch(() => null);
-    } catch (err) {
-      if (attempt < 1) continue;
-      throw new Error(`last.fm ${method} timed out`);
-    }
-    if (res.ok && data && !data.error) return data;
-    const temporary = !data || [11, 16, 29].includes(data.error) || res.status >= 500;
-    if (temporary && attempt < 1) { await new Promise((r) => setTimeout(r, 300)); continue; }
-    throw new Error(`last.fm ${method} failed: ${data?.message || res.status}`);
-  }
-}
-
-// ---------- Helpers ----------
-
-// Pasting into a terminal can add spaces, quotes, or line breaks. Strip them.
-function cleanEnv(env) {
-  const clean = (v) => (typeof v === 'string' ? v.trim().replace(/^["']|["']$/g, '').trim() : v);
-  return { ...env, LASTFM_API_KEY: clean(env.LASTFM_API_KEY), LASTFM_USER: clean(env.LASTFM_USER) };
-}
-
-// Links open the song or artist in Spotify.
-function spotifySearch(...parts) {
-  const q = parts.filter(Boolean).join(' ').trim();
-  return q ? `https://open.spotify.com/search/${encodeURIComponent(q)}` : null;
-}
-
-// Last.fm lists images small -> extralarge. Use "extralarge" (300px), skip placeholders.
+// Spotify lists images largest first; pick one around 300px.
 function pickImage(images) {
-  const list = asArray(images).filter((i) => i && i['#text'] && !i['#text'].includes(PLACEHOLDER));
-  if (!list.length) return null;
-  const big = list.find((i) => i.size === 'extralarge') || list[list.length - 1];
-  return big['#text'].replace(/^http:/, 'https:');
+  if (!images || !images.length) return null;
+  const mid = images.find((i) => i.width && i.width <= 320);
+  return (mid || images[images.length - 1]).url;
 }
 
-function asArray(x) {
-  if (!x) return [];
-  return Array.isArray(x) ? x : [x];
+// ---------- Spotify helpers ----------
+
+async function getAccessToken(env) {
+  if (accessToken.value && Date.now() < accessToken.expiresAt) return accessToken.value;
+  const res = await fetch(TOKEN_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Basic ' + btoa(`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: env.SPOTIFY_REFRESH_TOKEN }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(`token refresh failed: ${res.status} ${body?.error_description || body?.error || ''}`.trim());
+  }
+  const data = await res.json();
+  accessToken = { value: data.access_token, expiresAt: Date.now() + (data.expires_in - 60) * 1000 };
+  return accessToken.value;
+}
+
+async function spotifyGet(path, token) {
+  const res = await fetch(API + path, { headers: { Authorization: `Bearer ${token}` } });
+  if (res.status === 204) return null;
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(`spotify ${path} failed: ${res.status} ${body?.error?.message || ''}`.trim());
+  }
+  return res.json();
 }
 
 // Cache a JSON value at Cloudflare's edge for `ttl` seconds.
 async function cached(ctx, key, ttl, load) {
   const cache = typeof caches !== 'undefined' ? caches.default : null;
-  const cacheKey = new Request(`https://listening-cache.internal/${key}`);
+  const cacheKey = new Request(`https://spotify-cache.internal/${key}`);
   if (cache) {
     const hit = await cache.match(cacheKey);
     if (hit) return hit.json();
@@ -191,8 +152,97 @@ async function cached(ctx, key, ttl, load) {
   return value;
 }
 
-function json(body, cacheControl = 'no-store') {
+// ---------- One-time setup (disabled once the refresh token is saved) ----------
+
+function login(url, env) {
+  if (env.SPOTIFY_REFRESH_TOKEN || !env.SPOTIFY_CLIENT_ID) return notFound();
+  const state = crypto.randomUUID();
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: env.SPOTIFY_CLIENT_ID,
+    scope: SCOPES,
+    redirect_uri: `${url.origin}/api/spotify/callback`,
+    state,
+  });
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: `https://accounts.spotify.com/authorize?${params}`,
+      'Set-Cookie': `spotify_state=${state}; Path=/api/spotify; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
+      'Cache-Control': 'no-store',
+    },
+  });
+}
+
+async function callback(request, url, env) {
+  if (env.SPOTIFY_REFRESH_TOKEN || !env.SPOTIFY_CLIENT_ID || !env.SPOTIFY_CLIENT_SECRET) return notFound();
+  const code = url.searchParams.get('code');
+  const state = url.searchParams.get('state');
+  const cookie = (request.headers.get('Cookie') || '').match(/(?:^|;\s*)spotify_state=([^;]+)/);
+  if (!code || !state || !cookie || cookie[1] !== state) {
+    return page('Setup failed', '<p>The login link expired or did not match. Go back to <a href="/api/spotify/login">/api/spotify/login</a> and try again.</p>', 400);
+  }
+
+  const res = await fetch(TOKEN_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Basic ' + btoa(`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: `${url.origin}/api/spotify/callback` }),
+  });
+  if (!res.ok) return page('Setup failed', `<p>Spotify rejected the request (HTTP ${res.status}). Check the client ID, secret, and redirect URI.</p>`, 502);
+  const data = await res.json();
+
+  return page('Spotify connected', `
+    <p>Copy this refresh token. It works like a password for your Spotify listening data, so don't share it.</p>
+    <pre>${escapeHtml(data.refresh_token || '')}</pre>
+    <p>In your terminal, inside the <code>pratulsaini.fyi</code> folder, run:</p>
+    <pre>npx wrangler secret put SPOTIFY_REFRESH_TOKEN</pre>
+    <p>Paste the token when it asks. Once it's saved, this setup page turns itself off.</p>`);
+}
+
+// ---------- Small utilities ----------
+
+// Pasting into a terminal can add spaces, quotes, or line breaks. Strip them.
+function cleanEnv(env) {
+  const clean = (v) => (typeof v === 'string' ? v.trim().replace(/^["']|["']$/g, '').trim() : v);
+  return {
+    ...env,
+    SPOTIFY_CLIENT_ID: clean(env.SPOTIFY_CLIENT_ID),
+    SPOTIFY_CLIENT_SECRET: clean(env.SPOTIFY_CLIENT_SECRET),
+    SPOTIFY_REFRESH_TOKEN: clean(env.SPOTIFY_REFRESH_TOKEN),
+  };
+}
+
+function json(body, status = 200, cacheControl = 'no-store') {
   return new Response(JSON.stringify(body), {
+    status,
     headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': cacheControl },
   });
+}
+
+function page(title, body, status = 200) {
+  return new Response(
+    `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title>
+<style>body{font:16px/1.6 system-ui,sans-serif;max-width:640px;margin:3rem auto;padding:0 1rem;color:#1a1714}pre{white-space:pre-wrap;word-break:break-all;background:#f3efe7;padding:1rem;border-radius:8px}</style>
+<h1>${escapeHtml(title)}</h1>${body}`,
+    {
+      status,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'Referrer-Policy': 'no-referrer',
+        'Set-Cookie': 'spotify_state=; Path=/api/spotify; HttpOnly; Secure; SameSite=Lax; Max-Age=0',
+      },
+    },
+  );
+}
+
+function notFound() {
+  return new Response('Not found', { status: 404 });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }

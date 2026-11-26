@@ -82,6 +82,11 @@
           <p class="np-status"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="np-status">Loading…</span></p>
           <p class="np-title"><a id="np-title" target="_blank" rel="noopener">Not playing right now</a></p>
           <p class="np-artist" id="np-artist">Hit Start to give it a spin</p>
+          <div class="np-progress" id="np-progress" hidden>
+            <span id="np-elapsed">0:00</span>
+            <div class="bar"><div class="fill" id="np-fill"></div></div>
+            <span id="np-duration">0:00</span>
+          </div>
         </div>
       </div>
     </section>
@@ -286,7 +291,7 @@
       <div class="section-head">
         <p class="side" data-letter="♥">On repeat</p>
         <h2>What I'm listening to</h2>
-        <p>Pulled live from my Spotify listening history. Top picks cover the last month.</p>
+        <p>Pulled live from my Spotify. Top picks cover the last four weeks.</p>
       </div>
       <div class="listening">
         <div>
@@ -532,6 +537,27 @@
       if (live) $('dock-song').textContent = t.name + ' — ' + t.artists;
     }
 
+    let ticker = null;
+    function startProgress(now) {
+      clearInterval(ticker);
+      const bar = $('np-progress');
+      if (!now || !now.durationMs) { bar.hidden = true; return; }
+      bar.hidden = false;
+      const base = now.progressMs || 0, at = Date.now(), dur = now.durationMs;
+      let reloaded = false;
+      const draw = () => {
+        const p = now.isPlaying ? base + (Date.now() - at) : base;
+        const c = Math.min(p, dur);
+        $('np-elapsed').textContent = fmt(c);
+        $('np-duration').textContent = fmt(dur);
+        $('np-fill').style.width = (c / dur * 100).toFixed(2) + '%';
+        // Song ended: fetch the next one, once.
+        if (now.isPlaying && !reloaded && p > dur + 3000) { reloaded = true; load(); }
+      };
+      draw();
+      if (now.isPlaying) ticker = setInterval(draw, 1000);
+    }
+
     function renderLists(data) {
       const tracks = $('top-tracks'), artists = $('top-artists'), recent = $('recent');
       tracks.replaceChildren(); artists.replaceChildren(); recent.replaceChildren();
@@ -550,7 +576,7 @@
         return li;
       };
 
-      (data.topTracks || []).forEach((t) => tracks.append(row(t, t.artists, t.plays ? t.plays + ' plays' : null)));
+      (data.topTracks || []).forEach((t, i) => tracks.append(row(t, t.artists, '#' + (i + 1))));
       (data.topArtists || []).forEach((a) => artists.append(row(a, a.detail || 'Artist', null, true)));
       (data.recent || []).slice(0, 5).forEach((t) => recent.append(row(t, t.artists, ago(t.playedAt))));
 
@@ -573,13 +599,16 @@
 
         const now = data.now;
         const last = (data.recent || [])[0];
-        if (now && now.isPlaying) setPlayer('playing', now, 'Listening now');
+        if (now && now.isPlaying) setPlayer('playing', now, 'Listening now on Spotify');
+        else if (now) setPlayer('paused', now, 'Paused on Spotify');
         else if (last) setPlayer('recent', last, 'Last played ' + ago(last.playedAt));
         else setPlayer('idle', null, 'Not listening right now');
+        startProgress(now);
         renderLists(data);
       } catch (e) {
         console.warn('Listening data unavailable:', e && e.message);
         setPlayer('idle', null, 'Not listening right now');
+        startProgress(null);
       } finally {
         clearTimeout(timer);
         loading = false;

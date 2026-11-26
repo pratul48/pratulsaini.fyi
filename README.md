@@ -1,11 +1,11 @@
 # pratulsaini.fyi
 
-Personal resume and portfolio site for Pratul Saini, with a live "now playing" player and listening stats from Spotify (through Last.fm).
+Personal resume and portfolio site for Pratul Saini, with a live "now playing" player and listening stats from Spotify.
 
 ## Files
 
 - `public/index.html`, `public/styles.css`: the site
-- `src/index.js`: Cloudflare Worker. Serves `public/` and adds `/api/spotify`, which returns what I'm playing, recently played, and top tracks and artists from Last.fm.
+- `src/index.js`: Cloudflare Worker. Serves `public/` and adds `/api/spotify`, which returns what I'm playing, recently played, and top tracks and artists from Spotify.
 - `wrangler.toml`: Cloudflare config (custom domains, static files, Worker entry point)
 
 ## Deploy
@@ -14,22 +14,28 @@ Personal resume and portfolio site for Pratul Saini, with a live "now playing" p
 npx wrangler deploy
 ```
 
-## Connect your listening (one time)
+## Connect Spotify (one time)
 
-The music data comes from **Last.fm**, which logs everything you play on Spotify. It works with a free Spotify account. Spotify's own API now requires Premium.
+Spotify's developer rules (Feb 2026) require the app owner to have **Spotify Premium**. If Premium lapses, the music section stops until you resubscribe.
 
-1. Make a free account at https://www.last.fm/join.
-2. Connect Spotify: https://www.last.fm/settings/applications → **Spotify scrobbling** → **Connect**. From now on, every song you play on Spotify is logged.
-3. Get an API key at https://www.last.fm/api/account/create. Fill in any app name, leave the callback URL blank, and copy the **API key**. You don't need the shared secret.
-4. Save your key and username as Worker secrets, pasting each when asked:
+1. Go to https://developer.spotify.com/dashboard → **Create app**.
+   - Redirect URI: `https://pratulsaini.fyi/api/spotify/callback` (click **Add**)
+   - API: check **Web API**
+   - Copy the **Client ID** and **Client secret** from the app's settings.
+2. Save them as Worker secrets (paste each value when asked), then deploy:
    ```sh
-   npx wrangler secret put LASTFM_API_KEY
-   npx wrangler secret put LASTFM_USER
+   npx wrangler secret put SPOTIFY_CLIENT_ID
+   npx wrangler secret put SPOTIFY_CLIENT_SECRET
+   npx wrangler deploy
+   ```
+3. Open https://pratulsaini.fyi/api/spotify/login and approve. The page shows a refresh token.
+4. Save it:
+   ```sh
+   npx wrangler secret put SPOTIFY_REFRESH_TOKEN
    ```
 
-To check it's working, open https://pratulsaini.fyi/api/spotify. You should see JSON with `"configured": true` and your songs. Until it's set up, the player shows "Not listening right now" and the Listening section stays hidden.
-
-Last.fm only knows what you've played since you connected it, so the top tracks and artists fill in over the first week or two.
+The setup pages turn themselves off once the refresh token is saved.
+To check, open https://pratulsaini.fyi/api/spotify. You should see `"configured": true`. If it shows `"error": true`, the `reason` field says why.
 
 ## Local preview
 
