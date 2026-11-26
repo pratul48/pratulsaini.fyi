@@ -87,6 +87,16 @@
             <div class="bar"><div class="fill" id="np-fill"></div></div>
             <span id="np-duration">0:00</span>
           </div>
+          <div class="np-actions">
+            <button class="chip chip-solid" id="listen-btn" type="button" hidden>
+              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></svg>
+              <span id="listen-label">Listen along</span>
+            </button>
+            <button class="chip" id="suggest-btn" type="button" hidden>
+              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+              Suggest a song
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -384,8 +394,31 @@
         <span id="dock-total">0:00</span>
       </div>
     </div>
+    <div class="dock-embed" id="dock-embed" hidden>
+      <div class="dock-embed-head">
+        <label class="follow"><input type="checkbox" id="follow" checked /> Follow along with what I'm playing</label>
+        <button class="dock-close" id="embed-close" type="button" aria-label="Close player">×</button>
+      </div>
+      <div id="embed-target"></div>
+    </div>
     <p class="dock-live" id="dock-live" hidden><span class="eq on" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="dock-song"></span></p>
   </div>
+
+  <dialog class="suggest" id="suggest" aria-labelledby="suggest-h">
+    <form method="dialog" class="suggest-inner" id="suggest-form">
+      <div class="suggest-head">
+        <div>
+          <p class="side" data-letter="+">Suggested Songs</p>
+          <h2 id="suggest-h">Suggest a song</h2>
+          <p class="suggest-sub">Search Spotify and pick one. It goes straight into my <a id="suggest-pl" target="_blank" rel="noopener">Suggested Songs</a> playlist.</p>
+        </div>
+        <button class="dock-close" value="close" aria-label="Close">×</button>
+      </div>
+      <input class="suggest-input" id="suggest-q" type="search" placeholder="Song or artist" autocomplete="off" maxlength="100" />
+      <p class="suggest-msg" id="suggest-msg" aria-live="polite"></p>
+      <ul class="music-list suggest-results" id="suggest-results"></ul>
+    </form>
+  </dialog>
 
   <script>
   (() => {
@@ -464,7 +497,7 @@
         const p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
         $('dock-fill').style.width = (p * 100).toFixed(2) + '%';
         $('dock-elapsed').textContent = fmt(p * totalMs);
-        dock.classList.toggle('show', scrollY > 320);
+        dock.classList.toggle('show', scrollY > 320 || dock.classList.contains('has-embed'));
         $('dock-side').textContent = visibleSections()[currentIndex()].dataset.track;
       });
     };
@@ -517,6 +550,139 @@
       return img;
     };
 
+    // ---------- Listen along (Spotify embed in the bottom bar) ----------
+    const validId = (id) => typeof id === 'string' && /^[A-Za-z0-9]{22}$/.test(id);
+    let current = null;          // the song shown on the turntable
+    let embed = null;            // Spotify embed controller
+    let embedId = null;          // song loaded in the embed
+    let embedPaused = true;
+    let apiLoading = null;
+
+    function loadEmbedApi() {
+      if (apiLoading) return apiLoading;
+      apiLoading = new Promise((resolve) => {
+        window.onSpotifyIframeApiReady = (IFrameAPI) => resolve(IFrameAPI);
+        const s = document.createElement('script');
+        s.src = 'https://open.spotify.com/embed/iframe-api/v1';
+        s.async = true;
+        document.head.appendChild(s);
+      });
+      return apiLoading;
+    }
+
+    async function openEmbed(id) {
+      if (!validId(id)) return;
+      $('dock-embed').hidden = false;
+      dock.classList.add('show', 'has-embed');
+      if (embed) { playInEmbed(id, true); return; }
+      const IFrameAPI = await loadEmbedApi();
+      IFrameAPI.createController($('embed-target'), { uri: 'spotify:track:' + id, width: '100%', height: 80 }, (controller) => {
+        embed = controller;
+        embedId = id;
+        controller.addListener('playback_update', (e) => { embedPaused = Boolean(e.data && e.data.isPaused); });
+        controller.addListener('ready', () => controller.play());
+      });
+      $('listen-label').textContent = 'Listening along';
+    }
+
+    function playInEmbed(id, start) {
+      if (!embed || !validId(id) || id === embedId) return;
+      embedId = id;
+      embed.loadUri('spotify:track:' + id);
+      if (start) embed.play();
+    }
+
+    $('listen-btn').addEventListener('click', () => current && openEmbed(current.id));
+    $('embed-close').addEventListener('click', () => {
+      if (embed) embed.pause();
+      $('dock-embed').hidden = true;
+      dock.classList.remove('has-embed');
+      $('listen-label').textContent = 'Listen along';
+      onScroll();
+    });
+
+    // When I switch songs, the visitor's player follows (if they left "Follow along" on).
+    function followAlong(t) {
+      if (!embed || $('dock-embed').hidden || !$('follow').checked || !t) return;
+      if (t.id !== embedId) playInEmbed(t.id, !embedPaused);
+    }
+
+    // ---------- Suggest a song ----------
+    const dialog = $('suggest');
+    let searchTimer = null, searchSeq = 0;
+    $('suggest-btn').addEventListener('click', () => {
+      dialog.showModal();
+      $('suggest-q').focus();
+    });
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+    $('suggest-form').addEventListener('submit', (e) => { if (e.submitter && e.submitter.value === 'close') return; e.preventDefault(); });
+
+    $('suggest-q').addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      const q = $('suggest-q').value.trim();
+      if (q.length < 2) { $('suggest-results').replaceChildren(); $('suggest-msg').textContent = ''; return; }
+      searchTimer = setTimeout(() => runSearch(q), 350);
+    });
+
+    async function runSearch(q) {
+      const seq = ++searchSeq;
+      $('suggest-msg').textContent = 'Searching…';
+      try {
+        const res = await fetch('/api/spotify/search?q=' + encodeURIComponent(q));
+        const data = await res.json();
+        if (seq !== searchSeq) return; // a newer search started
+        const list = $('suggest-results');
+        list.replaceChildren();
+        const results = (data.results || []).filter((t) => validId(t.id));
+        $('suggest-msg').textContent = results.length ? '' : 'No songs found. Try another search.';
+        results.forEach((t) => {
+          const li = el('li');
+          const rowEl = el('div', 'row');
+          rowEl.append(art(t.image, 'art'));
+          const text = el('span', 'row-text');
+          text.append(el('strong', null, t.name), el('span', null, t.artists));
+          const add = el('button', 'chip chip-solid', 'Add');
+          add.type = 'button';
+          add.addEventListener('click', () => addSuggestion(t, add));
+          rowEl.append(text, add);
+          li.append(rowEl);
+          list.append(li);
+        });
+      } catch (e) {
+        if (seq === searchSeq) $('suggest-msg').textContent = 'Search isn\u2019t working right now. Try again in a bit.';
+      }
+    }
+
+    async function addSuggestion(t, btn) {
+      btn.disabled = true;
+      btn.textContent = 'Adding…';
+      try {
+        const res = await fetch('/api/spotify/suggest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: t.id }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          btn.textContent = data.duplicate ? 'Already added' : 'Added ✓';
+          $('suggest-msg').textContent = data.duplicate
+            ? 'Someone already suggested that one. Thanks anyway!'
+            : 'Thanks! "' + t.name + '" is in the playlist.';
+          const pl = safePlaylist(data.playlistUrl);
+          if (pl) $('suggest-pl').href = pl;
+        } else {
+          btn.disabled = false;
+          btn.textContent = 'Add';
+          $('suggest-msg').textContent = data.reason || 'Couldn\u2019t add that song. Try again later.';
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Add';
+        $('suggest-msg').textContent = 'Couldn\u2019t add that song. Try again later.';
+      }
+    }
+    const safePlaylist = (u) => (typeof u === 'string' && u.startsWith('https://open.spotify.com/playlist/') ? u : null);
+
     function setPlayer(mode, t, statusText) {
       deck.classList.toggle('playing', mode === 'playing');
       $('player').dataset.mode = mode;
@@ -531,6 +697,10 @@
       const img = safeImg(t && t.image);
       $('label').style.backgroundImage = img ? 'url("' + img.replace(/"/g, '%22') + '")' : '';
       $('label').classList.toggle('has-art', Boolean(img));
+
+      current = t && validId(t.id) ? t : null;
+      $('listen-btn').hidden = !current;
+      followAlong(mode === 'playing' ? t : null);
 
       const live = mode === 'playing' && t;
       $('dock-live').hidden = !live;
@@ -605,6 +775,7 @@
         else setPlayer('idle', null, 'Not listening right now');
         startProgress(now);
         renderLists(data);
+        $('suggest-btn').hidden = false;
       } catch (e) {
         console.warn('Listening data unavailable:', e && e.message);
         setPlayer('idle', null, 'Not listening right now');
@@ -616,7 +787,7 @@
     }
 
     load();
-    setInterval(() => { if (!document.hidden) load(); }, 30000);
+    setInterval(() => { if (!document.hidden) load(); }, 10000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
   })();
   </script>

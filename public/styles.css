@@ -233,6 +233,16 @@ h1, h2 {
 .np-progress .bar { height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; }
 .np-progress .fill { height: 100%; width: 0; background: var(--text); transition: width 1s linear; }
 .player[data-mode="paused"] .np-status { color: var(--muted); }
+.np-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.chip {
+  display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.85rem; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--paper); color: var(--text); cursor: pointer;
+  font-size: 0.85rem; font-weight: 500; white-space: nowrap; transition: border-color 0.15s, background-color 0.15s;
+}
+.chip:hover { border-color: var(--text); }
+.chip-solid { background: var(--text); border-color: var(--text); color: var(--bg); }
+.chip-solid:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.chip:disabled { opacity: 0.6; cursor: default; }
 
 /* ---------- Up next ticker ---------- */
 .ticker {
@@ -456,6 +466,39 @@ a.row:hover strong { color: var(--accent); }
 }
 .dock-live span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* Listen-along player inside the dock */
+.dock.has-embed { flex-wrap: wrap; }
+.dock-embed { flex-basis: 100%; order: -1; }
+.dock-embed-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin: 0 0 0.4rem 0.4rem; }
+.follow { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; color: var(--muted); cursor: pointer; }
+.follow input { accent-color: var(--accent); }
+#embed-target, .dock-embed iframe { display: block; width: 100%; height: 80px; border: 0; border-radius: 12px; }
+.dock-close {
+  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; flex: none;
+  border: 1px solid var(--line); background: var(--paper); cursor: pointer; font-size: 1.1rem; line-height: 1; color: var(--muted);
+}
+.dock-close:hover { color: var(--accent); border-color: var(--accent); }
+
+/* Suggest-a-song dialog */
+.suggest {
+  width: min(560px, calc(100% - 24px)); max-height: min(640px, calc(100% - 48px));
+  margin: auto; padding: 0; border: 1px solid var(--line); border-radius: 18px;
+  background: var(--bg); color: var(--text); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6);
+}
+.suggest::backdrop { background: rgba(20, 18, 16, 0.55); backdrop-filter: blur(3px); }
+.suggest-inner { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.9rem; }
+.suggest-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+.suggest h2 { font-size: 1.8rem; line-height: 1.1; }
+.suggest-sub { color: var(--muted); font-size: 0.92rem; margin-top: 0.4rem; }
+.suggest-sub a { color: var(--accent); }
+.suggest-input {
+  width: 100%; padding: 0.8rem 1rem; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--paper); color: var(--text); font: inherit;
+}
+.suggest-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.suggest-msg { min-height: 1.2em; font-size: 0.88rem; color: var(--muted); }
+.suggest-results { max-height: 340px; overflow-y: auto; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 960px) {
   .hero { grid-template-columns: 1fr; gap: 3rem; padding: 4rem 0 3.5rem; }
@@ -470,6 +513,7 @@ a.row:hover strong { color: var(--accent); }
   .award .event { margin-top: 0; }
   .listening { grid-template-columns: 1fr; gap: 2rem; }
   .dock-live { display: none !important; }
+  .follow { font-size: 0.72rem; }
 }
 @media (max-width: 640px) {
   body { font-size: 1rem; }
@@ -509,7 +553,7 @@ a.row:hover strong { color: var(--accent); }
   body { font-size: 1rem; line-height: 1.4; background: #fff !important; padding: 0; }
   * { transition: none !important; animation: none !important; }
   .nav, .player, .actions, .side, .section-head p, .footer, .contact, #listening, .kicker,
-  .ticker, .wrapped, .dock, .band-head p, .no { display: none !important; }
+  .ticker, .wrapped, .dock, .suggest, .band-head p, .no { display: none !important; }
   .hero { display: block; padding: 0 0 0.5rem; }
   .hero h1 { font-size: 22pt; margin-bottom: 0.3rem; }
   .hero-lede { font-size: 1rem; max-width: none; }
