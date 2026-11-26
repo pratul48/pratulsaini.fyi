@@ -490,7 +490,7 @@
       scrollTo({ top: ((e.clientX - r.left) / r.width) * max, behavior: 'smooth' });
     });
 
-    // ---------- Live listening (Spotify history via Last.fm) ----------
+    // ---------- Live listening from Spotify ----------
     const safeUrl = (u) => (typeof u === 'string' && u.startsWith('https://open.spotify.com/') ? u : null);
     const safeImg = (u) => (typeof u === 'string' && u.startsWith('https://') ? u : null);
     const ago = (iso) => {
@@ -595,7 +595,7 @@
         const res = await fetch('/api/spotify?t=' + Date.now(), { headers: { Accept: 'application/json' }, cache: 'no-store', signal: ctrl.signal });
         const data = await res.json();
         if (!data.configured) throw new Error('not set up');
-        if (data.error) throw new Error(data.reason || 'Last.fm error');
+        if (data.error) throw new Error(data.reason || 'Spotify error');
 
         const now = data.now;
         const last = (data.recent || [])[0];
