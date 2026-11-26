@@ -62,7 +62,18 @@ async function listening(env, ctx) {
 // ---------- Last.fm calls ----------
 
 async function recentTracks(env) {
-  const data = await lastfm(env, 'user.getrecenttracks', { limit: '7' });
+  // Last.fm sometimes fails one form of this request for a new account but answers another.
+  // Try a few variations before giving up.
+  const variants = [
+    [env, { limit: '7' }],
+    [env, { limit: '7', extended: '1' }],
+    [{ ...env, LASTFM_USER: env.LASTFM_USER.toLowerCase() }, { limit: '10', page: '1' }],
+  ];
+  let data, lastErr;
+  for (const [e, params] of variants) {
+    try { data = await lastfm(e, 'user.getrecenttracks', params); break; } catch (err) { lastErr = err; }
+  }
+  if (!data) throw lastErr;
   const items = asArray(data?.recenttracks?.track);
 
   let now = null;
@@ -70,7 +81,7 @@ async function recentTracks(env) {
   for (const t of items) {
     const item = {
       name: t.name || '',
-      artists: t.artist?.['#text'] || '',
+      artists: t.artist?.['#text'] || t.artist?.name || '',
       album: t.album?.['#text'] || '',
       image: pickImage(t.image),
     };
