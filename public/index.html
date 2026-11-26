@@ -552,11 +552,16 @@
 
     // ---------- Listen along (Spotify embed in the bottom bar) ----------
     const validId = (id) => typeof id === 'string' && /^[A-Za-z0-9]{22}$/.test(id);
-    let current = null;          // the song shown on the turntable
-    let embed = null;            // Spotify embed controller
-    let embedId = null;          // song loaded in the embed
-    let embedPaused = true;
+    let current = null;        // the song shown on the turntable (with live position)
+    let embed = null;          // Spotify embed controller
+    let embedId = null;        // song loaded in the embed
+    let wantsAudio = false;    // the visitor wants to hear music (only turns off if THEY pause)
+    let switchingUntil = 0;    // ignore pause events while we're loading the next song
+    let pendingSeek = null;    // where to jump once the new song starts
     let apiLoading = null;
+
+    // Where I am in the song right now, in ms (uses the time Spotify was asked, not when the page got it).
+    const myPosition = () => (current && current.positionNow ? current.positionNow() : 0);
 
     function loadEmbedApi() {
       if (apiLoading) return apiLoading;
@@ -570,41 +575,73 @@
       return apiLoading;
     }
 
-    async function openEmbed(id) {
-      if (!validId(id)) return;
+    async function openEmbed() {
+      if (!current) return;
+      wantsAudio = true;
       $('dock-embed').hidden = false;
       dock.classList.add('show', 'has-embed');
-      if (embed) { playInEmbed(id, true); return; }
-      const IFrameAPI = await loadEmbedApi();
-      IFrameAPI.createController($('embed-target'), { uri: 'spotify:track:' + id, width: '100%', height: 80 }, (controller) => {
-        embed = controller;
-        embedId = id;
-        controller.addListener('playback_update', (e) => { embedPaused = Boolean(e.data && e.data.isPaused); });
-        controller.addListener('ready', () => controller.play());
-      });
       $('listen-label').textContent = 'Listening along';
+      if (embed) { startSong(current, true); return; }
+
+      const IFrameAPI = await loadEmbedApi();
+      IFrameAPI.createController($('embed-target'), { uri: 'spotify:track:' + current.id, width: '100%', height: 80 }, (controller) => {
+        embed = controller;
+        embedId = current.id;
+        controller.addListener('ready', () => startSong(current, true, true));
+        controller.addListener('playback_update', onEmbedUpdate);
+      });
     }
 
-    function playInEmbed(id, start) {
-      if (!embed || !validId(id) || id === embedId) return;
-      embedId = id;
-      embed.loadUri('spotify:track:' + id);
-      if (start) embed.play();
+    // Load a song in the visitor's player and (optionally) start it at my position.
+    function startSong(t, play, alreadyLoaded) {
+      if (!embed || !t || !validId(t.id)) return;
+      switchingUntil = Date.now() + 4000;
+      if (!alreadyLoaded && t.id !== embedId) embed.loadUri('spotify:track:' + t.id);
+      embedId = t.id;
+      if (!play) { pendingSeek = null; return; }
+      pendingSeek = { at: performance.now(), ms: t.isPlaying ? myPosition() : 0 };
+      embed.play();
     }
 
-    $('listen-btn').addEventListener('click', () => current && openEmbed(current.id));
+    function onEmbedUpdate(e) {
+      const d = (e && e.data) || {};
+      const playing = !d.isPaused && !d.isBuffering;
+
+      // Once the new song is actually playing, jump to where I am in it.
+      // Skipped for 30-second previews (visitors not logged into Spotify).
+      if (playing && pendingSeek) {
+        const target = pendingSeek.ms + (performance.now() - pendingSeek.at);
+        pendingSeek = null;
+        if (d.duration > 35000 && target > 3000 && target < d.duration - 5000 && Math.abs((d.position || 0) - target) > 2500) {
+          embed.seek(Math.floor(target / 1000));
+        }
+      }
+
+      if (playing) { wantsAudio = true; return; }
+      if (!d.isPaused || Date.now() < switchingUntil) return;
+
+      // Paused. If it's because the song (or preview) ended, keep wanting audio.
+      // If the visitor pressed pause in the middle, respect that.
+      const ended = d.duration && d.position >= d.duration - 1500;
+      const atStart = (d.position || 0) < 500;
+      if (!ended && !atStart) wantsAudio = false;
+    }
+
+    $('listen-btn').addEventListener('click', openEmbed);
     $('embed-close').addEventListener('click', () => {
+      wantsAudio = false;
       if (embed) embed.pause();
       $('dock-embed').hidden = true;
       dock.classList.remove('has-embed');
       $('listen-label').textContent = 'Listen along';
       onScroll();
     });
+    $('follow').addEventListener('change', () => { if ($('follow').checked) followAlong(current, true); });
 
-    // When I switch songs, the visitor's player follows (if they left "Follow along" on).
-    function followAlong(t) {
-      if (!embed || $('dock-embed').hidden || !$('follow').checked || !t) return;
-      if (t.id !== embedId) playInEmbed(t.id, !embedPaused);
+    // When I switch songs, the visitor's player switches too and keeps playing.
+    function followAlong(t, force) {
+      if (!embed || $('dock-embed').hidden || !$('follow').checked || !t || !t.isPlaying) return;
+      if (t.id !== embedId || force) startSong(t, wantsAudio);
     }
 
     // ---------- Suggest a song ----------
@@ -713,22 +750,26 @@
       const bar = $('np-progress');
       if (!now || !now.durationMs) { bar.hidden = true; return; }
       bar.hidden = false;
-      const base = now.progressMs || 0, at = Date.now(), dur = now.durationMs;
+      const dur = now.durationMs;
       let reloaded = false;
       const draw = () => {
-        const p = now.isPlaying ? base + (Date.now() - at) : base;
+        const p = now.positionNow();
         const c = Math.min(p, dur);
         $('np-elapsed').textContent = fmt(c);
         $('np-duration').textContent = fmt(dur);
         $('np-fill').style.width = (c / dur * 100).toFixed(2) + '%';
         // Song ended: fetch the next one, once.
-        if (now.isPlaying && !reloaded && p > dur + 3000) { reloaded = true; load(); }
+        if (now.isPlaying && !reloaded && p > dur + 1000) { reloaded = true; setTimeout(load, 300); }
       };
       draw();
       if (now.isPlaying) ticker = setInterval(draw, 1000);
     }
 
+    let lastLists = '';
     function renderLists(data) {
+      const sig = JSON.stringify([data.topTracks, data.topArtists, (data.recent || []).map((t) => t.id + t.playedAt)]);
+      if (sig === lastLists) return;
+      lastLists = sig;
       const tracks = $('top-tracks'), artists = $('top-artists'), recent = $('recent');
       tracks.replaceChildren(); artists.replaceChildren(); recent.replaceChildren();
 
@@ -750,6 +791,11 @@
       (data.topArtists || []).forEach((a) => artists.append(row(a, a.detail || 'Artist', null, true)));
       (data.recent || []).slice(0, 5).forEach((t) => recent.append(row(t, t.artists, ago(t.playedAt))));
 
+      // Hide a column if Spotify gave nothing for it.
+      tracks.parentElement.hidden = !(data.topTracks || []).length;
+      artists.parentElement.hidden = !(data.topArtists || []).length;
+      recent.parentElement.hidden = !(data.recent || []).length;
+      if (data.errors) console.warn('Some Spotify data failed:', data.errors);
       const any = (data.topTracks || []).length || (data.topArtists || []).length || (data.recent || []).length;
       $('listening').hidden = !any;
       onScroll();
@@ -768,6 +814,13 @@
         if (data.error) throw new Error(data.reason || 'Spotify error');
 
         const now = data.now;
+        if (now) {
+          // Position = what Spotify said + time since Spotify said it (server clock) + time since we got it (our clock).
+          const received = performance.now();
+          const age = Math.max(0, (data.fetchedAt || 0) - (now.sampledAt || data.fetchedAt || 0));
+          const base = (now.progressMs || 0) + (now.isPlaying ? age : 0);
+          now.positionNow = () => Math.min(now.durationMs || Infinity, now.isPlaying ? base + (performance.now() - received) : base);
+        }
         const last = (data.recent || [])[0];
         if (now && now.isPlaying) setPlayer('playing', now, 'Listening now on Spotify');
         else if (now) setPlayer('paused', now, 'Paused on Spotify');
@@ -787,7 +840,7 @@
     }
 
     load();
-    setInterval(() => { if (!document.hidden) load(); }, 10000);
+    setInterval(() => { if (!document.hidden) load(); }, 5000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
   })();
   </script>

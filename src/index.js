@@ -27,7 +27,7 @@ const PLAYLIST_NAME = 'Suggested Songs';
 const SITE_ORIGINS = ['https://pratulsaini.fyi', 'https://www.pratulsaini.fyi'];
 
 // How long each piece of data is cached, in seconds. Short for "now playing" so the page feels live.
-const TTL = { now: 5, recent: 20, topTracks: 6 * 3600, topArtists: 6 * 3600, search: 300 };
+const TTL = { now: 3, recent: 20, topTracks: 6 * 3600, topArtists: 6 * 3600, search: 300 };
 
 // Suggestion limits: per visitor (IP) and per song.
 const SUGGEST_LIMIT = { perVisitor: 3, windowSec: 600, sameSongSec: 86400 };
@@ -67,14 +67,28 @@ async function listening(env, ctx) {
   let tokenPromise;
   const token = () => (tokenPromise ||= getAccessToken(env));
 
-  const [now, recent, topTracks, topArtists] = await Promise.all([
+  // Load each part on its own so one failure doesn't hide the rest.
+  const parts = await Promise.allSettled([
     cached(ctx, 'now', TTL.now, async () => nowPlaying(await token())),
     cached(ctx, 'recent', TTL.recent, async () => recentlyPlayed(await token())),
     cached(ctx, 'top-tracks', TTL.topTracks, async () => topItems(await token(), 'tracks')),
     cached(ctx, 'top-artists', TTL.topArtists, async () => topItems(await token(), 'artists')),
   ]);
+  const names = ['now', 'recent', 'topTracks', 'topArtists'];
+  const errors = {};
+  parts.forEach((r, i) => { if (r.status === 'rejected') errors[names[i]] = String(r.reason?.message || r.reason); });
+  if (Object.keys(errors).length === parts.length) throw new Error(errors.now);
+  const val = (i, fallback) => (parts[i].status === 'fulfilled' ? parts[i].value : fallback);
 
-  return json({ configured: true, fetchedAt: Date.now(), now, recent, topTracks, topArtists });
+  return json({
+    configured: true,
+    fetchedAt: Date.now(),
+    now: val(0, null),
+    recent: val(1, []),
+    topTracks: val(2, []),
+    topArtists: val(3, []),
+    ...(Object.keys(errors).length ? { errors } : {}),
+  });
 }
 
 async function nowPlaying(token) {
@@ -84,6 +98,7 @@ async function nowPlaying(token) {
     ...track(data.item),
     isPlaying: Boolean(data.is_playing),
     progressMs: data.progress_ms || 0,
+    sampledAt: Date.now(), // when we asked Spotify, so the page can work out the exact position
     durationMs: data.item.duration_ms || 0,
   };
 }
@@ -94,8 +109,13 @@ async function recentlyPlayed(token) {
 }
 
 async function topItems(token, type) {
-  const data = await spotifyGet(`/me/top/${type}?limit=5&time_range=short_term`, token);
-  const items = data?.items || [];
+  // Try the last 4 weeks first. If Spotify has nothing yet, fall back to ~6 months, then all time.
+  let items = [];
+  for (const range of ['short_term', 'medium_term', 'long_term']) {
+    const data = await spotifyGet(`/me/top/${type}?limit=5&time_range=${range}`, token);
+    items = data?.items || [];
+    if (items.length) break;
+  }
   if (type === 'tracks') return items.map(track);
   return items.map((a) => ({
     name: a.name,

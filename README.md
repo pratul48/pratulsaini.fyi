@@ -48,7 +48,7 @@ Then open https://pratulsaini.fyi/api/spotify/login again, approve, and save the
 
 ### Features
 
-- **Now playing** updates about every 10 seconds without refreshing.
+- **Now playing** updates about every 5 seconds without refreshing.
 - **Listen along** opens a Spotify player in the bottom bar that follows what I'm playing. Visitors logged into Spotify hear full songs; everyone else gets 30-second previews (Spotify's rule).
 - **Suggest a song** searches Spotify and adds the pick to a public playlist called "Suggested Songs" (created automatically). Limits: 3 suggestions per visitor every 10 minutes, and the same song can't be added twice in a day. To use an existing playlist instead, save its ID: `npx wrangler secret put SPOTIFY_PLAYLIST_ID`.
 To check, open https://pratulsaini.fyi/api/spotify. You should see `"configured": true`. If it shows `"error": true`, the `reason` field says why.
