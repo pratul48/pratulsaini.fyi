@@ -117,13 +117,20 @@ async function topArtistList(env) {
 
 async function lastfm(env, method, params) {
   const qs = new URLSearchParams({ method, user: env.LASTFM_USER, api_key: env.LASTFM_API_KEY, format: 'json', ...params });
-  // Last.fm sometimes returns a temporary error (8 = "backend failed", 11 = offline, 16 = temporary). Retry those.
+  // Retry once on temporary errors. Error 8 isn't retried: Last.fm also returns it for accounts with no scrobbles yet.
   for (let attempt = 0; ; attempt++) {
-    const res = await fetch(`${API}?${qs}`, { headers: { 'User-Agent': 'pratulsaini.fyi (+https://pratulsaini.fyi)' } });
-    const data = await res.json().catch(() => null);
+    let res, data;
+    try {
+      // Give up on a slow Last.fm call after 4 seconds so the page never hangs.
+      res = await fetch(`${API}?${qs}`, { headers: { 'User-Agent': 'pratulsaini.fyi (+https://pratulsaini.fyi)' }, signal: AbortSignal.timeout(4000) });
+      data = await res.json().catch(() => null);
+    } catch (err) {
+      if (attempt < 1) continue;
+      throw new Error(`last.fm ${method} timed out`);
+    }
     if (res.ok && data && !data.error) return data;
-    const temporary = !data || [8, 11, 16, 29].includes(data.error) || res.status >= 500;
-    if (temporary && attempt < 2) { await new Promise((r) => setTimeout(r, 400 * (attempt + 1))); continue; }
+    const temporary = !data || [11, 16, 29].includes(data.error) || res.status >= 500;
+    if (temporary && attempt < 1) { await new Promise((r) => setTimeout(r, 300)); continue; }
     throw new Error(`last.fm ${method} failed: ${data?.message || res.status}`);
   }
 }
