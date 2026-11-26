@@ -23,10 +23,11 @@ export default {
     const url = new URL(request.url);
     if (request.method === 'GET' && url.pathname === '/api/spotify') {
       try {
-        return await listening(env, ctx);
+        return await listening(cleanEnv(env), ctx);
       } catch (err) {
         console.error('listening error', err && err.message);
-        return json({ configured: true, error: true }, 'no-store');
+        // Last.fm's message (like "User not found") is safe to show and makes setup problems easy to spot.
+        return json({ configured: true, error: true, reason: String((err && err.message) || 'unknown') }, 'no-store');
       }
     }
     return env.ASSETS.fetch(request);
@@ -110,6 +111,12 @@ async function lastfm(env, method, params) {
 }
 
 // ---------- Helpers ----------
+
+// Pasting into a terminal can add spaces, quotes, or line breaks. Strip them.
+function cleanEnv(env) {
+  const clean = (v) => (typeof v === 'string' ? v.trim().replace(/^["']|["']$/g, '').trim() : v);
+  return { ...env, LASTFM_API_KEY: clean(env.LASTFM_API_KEY), LASTFM_USER: clean(env.LASTFM_USER) };
+}
 
 // Links open the song or artist in Spotify.
 function spotifySearch(...parts) {
