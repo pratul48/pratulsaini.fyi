@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pratul Saini</title>
-  <meta name="description" content="Pratul Saini, student at The Ohio State University. Hackathon projects, 3D design, and BloomWise." />
+  <meta name="description" content="Pratul Saini, student at The Ohio State University. Hackathon projects, 3D design, BloomWise, and what I'm listening to." />
   <meta property="og:title" content="Pratul Saini" />
-  <meta property="og:description" content="Student at The Ohio State University. Hackathon projects, 3D design, and BloomWise." />
+  <meta property="og:description" content="Student at The Ohio State University. Hackathon projects, 3D design, BloomWise, and what I'm listening to." />
   <meta property="og:url" content="https://pratulsaini.fyi" />
-  <meta name="theme-color" content="#f6f3ec" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231f3d2f'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='%23f6f3ec' font-family='Georgia, serif'>P</text></svg>" />
+  <meta name="theme-color" content="#f4efe6" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23161412'/><circle cx='50' cy='50' r='34' fill='none' stroke='%23332f2a' stroke-width='2'/><circle cx='50' cy='50' r='26' fill='none' stroke='%23332f2a' stroke-width='2'/><circle cx='50' cy='50' r='17' fill='%23d2462b'/><circle cx='50' cy='50' r='3' fill='%23f4efe6'/></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -23,13 +23,13 @@
   <header class="nav">
     <div class="wrap nav-inner">
       <a href="#top" class="mark">
-        <span class="mark-badge">P</span>
+        <span class="mark-disc" aria-hidden="true"></span>
         <span class="mark-name">Pratul Saini</span>
       </a>
       <nav aria-label="Sections">
         <a href="#work">Work</a>
         <a href="#experience">Experience</a>
-        <a href="#education">Education</a>
+        <a href="#listening">Listening</a>
         <a href="#contact">Contact</a>
         <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode">
           <svg class="icon-moon" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -43,12 +43,12 @@
     <!-- Hero -->
     <section class="hero wrap">
       <div class="hero-main">
-        <p class="kicker">Columbus, Ohio</p>
+        <p class="kicker">Student · The Ohio State University</p>
         <h1>Pratul Saini</h1>
         <p class="hero-lede">
-          I'm a student at The Ohio State University. I build AI tools at hackathons,
-          design buildings in Blender and SketchUp, and co-founded BloomWise, which brought
-          sustainability lessons to more than 1,000 K–8 students.
+          I build AI tools at hackathons, design buildings in Blender and SketchUp, and
+          co-founded BloomWise, which brought sustainability lessons to more than 1,000 K–8
+          students. Usually with something playing in the background.
         </p>
         <div class="actions">
           <a class="btn btn-solid" href="mailto:pratulsaini1@gmail.com">Email me</a>
@@ -57,15 +57,31 @@
         </div>
       </div>
 
-      <aside class="now" aria-label="Right now">
-        <p class="now-title">Right now</p>
-        <dl>
-          <div><dt>Studying</dt><dd>The Ohio State University</dd></div>
-          <div><dt>Latest build</dt><dd>GameDay Command, a crowd-safety simulator</dd></div>
-          <div><dt>Latest award</dt><dd>1st place at HackByte 2026</dd></div>
-          <div><dt>Open to</dt><dd>Internships, research, and hackathon teams</dd></div>
-        </dl>
-      </aside>
+      <!-- Live Spotify player. Filled in by the script at the bottom. -->
+      <div class="player" id="player" aria-live="polite">
+        <div class="deck" id="deck">
+          <div class="record" aria-hidden="true">
+            <div class="vinyl"><div class="label" id="label"></div></div>
+          </div>
+          <div class="sleeve" id="sleeve">
+            <img id="sleeve-art" alt="" hidden />
+            <div class="sleeve-blank" id="sleeve-blank">
+              <span class="sleeve-vol">Vol. 1</span>
+              <span class="sleeve-ps">PS</span>
+            </div>
+          </div>
+        </div>
+        <div class="np">
+          <p class="np-status"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span id="np-status">Checking Spotify…</span></p>
+          <p class="np-title"><a id="np-title" target="_blank" rel="noopener">Not playing right now</a></p>
+          <p class="np-artist" id="np-artist">Check back later</p>
+          <div class="np-progress" id="np-progress" hidden>
+            <span id="np-elapsed">0:00</span>
+            <div class="bar"><div class="fill" id="np-fill"></div></div>
+            <span id="np-duration">0:00</span>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Awards -->
@@ -74,22 +90,28 @@
         <h2 id="awards-h" class="band-title">Hackathon awards</h2>
         <div class="awards">
           <article class="award">
-            <p class="place">1st</p>
-            <p class="event">HackByte 2026</p>
-            <h3>FeelWise</h3>
-            <p>An AI platform that turns raw, unstructured emotional input into clear psychological insights and next steps.</p>
+            <div class="disc gold" aria-hidden="true"><span>1st</span></div>
+            <div>
+              <p class="event">HackByte 2026 · 1st place</p>
+              <h3>FeelWise</h3>
+              <p>An AI platform that turns raw, unstructured emotional input into clear psychological insights and next steps.</p>
+            </div>
           </article>
           <article class="award">
-            <p class="place">3rd</p>
-            <p class="event">MHacks 2026 · Capital One track</p>
-            <h3>Guardian</h3>
-            <p>An autonomous agent that checks itemized hospital bills against patient records, calls billing departments to dispute overcharges, and texts you when the refund lands.</p>
+            <div class="disc bronze" aria-hidden="true"><span>3rd</span></div>
+            <div>
+              <p class="event">MHacks 2026 · Capital One track</p>
+              <h3>Guardian</h3>
+              <p>An autonomous agent that checks itemized hospital bills against patient records, calls billing departments to dispute overcharges, and texts you when the refund lands.</p>
+            </div>
           </article>
           <article class="award">
-            <p class="place place-hm">HM</p>
-            <p class="event">HackByte 2025 · Honorable mention</p>
-            <h3>SeaScore</h3>
-            <p>A sustainability web app that turns everyday eco-actions into points to help cut ocean waste.</p>
+            <div class="disc hm" aria-hidden="true"><span>HM</span></div>
+            <div>
+              <p class="event">HackByte 2025 · Honorable mention</p>
+              <h3>SeaScore</h3>
+              <p>A sustainability web app that turns everyday eco-actions into points to help cut ocean waste.</p>
+            </div>
           </article>
         </div>
       </div>
@@ -98,18 +120,17 @@
     <!-- Work -->
     <section id="work" class="section wrap">
       <div class="section-head">
+        <p class="side">Side A</p>
         <h2>Selected work</h2>
         <p>Things I've built or designed, newest first.</p>
       </div>
-      <div class="section-body">
-        <article class="project">
-          <div class="project-meta">
-            <span>Nov 2026</span>
-            <span>Hackathon</span>
-          </div>
-          <div class="project-body">
-            <h3>GameDay Command</h3>
-            <p>A crowd-simulation platform for stadium operations and public-safety dispatchers. I led the team.</p>
+      <div class="tracklist">
+        <article class="track">
+          <span class="no">A1</span>
+          <h3>GameDay Command</h3>
+          <span class="time">Nov 2026</span>
+          <div class="track-body">
+            <p>A crowd-simulation platform for stadium operations and public-safety dispatchers. I led the team at a hackathon.</p>
             <ul class="points">
               <li>Reads video feeds to measure pedestrian and vehicle flow and maps bottlenecks in real time.</li>
               <li>Agent-based simulations predict crowd pressure 10–15 minutes ahead and suggest reroutes.</li>
@@ -118,38 +139,29 @@
             <p class="stack">AI · Computer vision · Simulation</p>
           </div>
         </article>
-
-        <article class="project">
-          <div class="project-meta">
-            <span>Mar – Apr 2025</span>
-            <span>Tesla STEM</span>
-          </div>
-          <div class="project-body">
-            <h3>Smart Garden</h3>
+        <article class="track">
+          <span class="no">A2</span>
+          <h3>Smart Garden</h3>
+          <span class="time">Mar – Apr 2025</span>
+          <div class="track-body">
             <p>A garden that monitors its own conditions and waters itself. I led a team of four, designed the prototypes in Blender, and helped build the working model.</p>
             <p class="stack">Blender · Automation · Team lead</p>
           </div>
         </article>
-
-        <article class="project">
-          <div class="project-meta">
-            <span>Dec 2024 – Jan 2025</span>
-            <span>Tesla STEM</span>
-          </div>
-          <div class="project-body">
-            <h3>Solar Charger</h3>
+        <article class="track">
+          <span class="no">A3</span>
+          <h3>Solar Charger</h3>
+          <span class="time">Dec 2024 – Jan 2025</span>
+          <div class="track-body">
             <p>A solar-powered charging station for our school that's still in daily use. I modeled the parts in Blender, helped install the panels, wiring, and indoor hub, and ran the marketing so students actually used it.</p>
             <p class="stack">Blender · Solar · Hardware</p>
           </div>
         </article>
-
-        <article class="project">
-          <div class="project-meta">
-            <span>Nov 2024 – Dec 2025</span>
-            <span>Tesla STEM</span>
-          </div>
-          <div class="project-body">
-            <h3>Samantha Smith Elementary Remodel</h3>
+        <article class="track">
+          <span class="no">A4</span>
+          <h3>Samantha Smith Elementary Remodel</h3>
+          <span class="time">Nov 2024 – Dec 2025</span>
+          <div class="track-body">
             <p>A proposal to remodel an elementary school with green roofs, solar panels, and rainwater collection. I built the 3D models in SketchUp and produced Twinmotion walkthroughs of the design.</p>
             <p class="stack">SketchUp · Twinmotion · Sustainable design</p>
           </div>
@@ -160,115 +172,138 @@
     <!-- Experience -->
     <section id="experience" class="section wrap">
       <div class="section-head">
+        <p class="side">Side B</p>
         <h2>Experience</h2>
         <p>Leadership, internships, and volunteering.</p>
       </div>
-      <div class="section-body">
-        <article class="job">
-          <header>
-            <h3>Econ Club</h3>
-            <p class="job-role">Co-lead · Tesla STEM High School</p>
-            <p class="job-date">Sep 2025 – 2026</p>
-          </header>
-          <ul class="points">
-            <li>Taught micro- and macroeconomics because our school didn't offer the AP classes.</li>
-            <li>Prepared students for competitions including the Wharton Investment Challenge.</li>
-            <li>Ran weekly lessons and recruiting, and grew the club to its largest membership yet.</li>
-          </ul>
+      <div class="tracklist">
+        <article class="track">
+          <span class="no">B1</span>
+          <h3>Econ Club</h3>
+          <span class="time">Sep 2025 – 2026</span>
+          <div class="track-body">
+            <p class="role">Co-lead · Tesla STEM High School</p>
+            <ul class="points">
+              <li>Taught micro- and macroeconomics because our school didn't offer the AP classes.</li>
+              <li>Prepared students for competitions including the Wharton Investment Challenge.</li>
+              <li>Ran weekly lessons and recruiting, and grew the club to its largest membership yet.</li>
+            </ul>
+          </div>
         </article>
+        <article class="track">
+          <span class="no">B2</span>
+          <h3>BloomWise</h3>
+          <span class="time">Jun 2025 – 2026</span>
+          <div class="track-body">
+            <p class="role">Co-founder</p>
+            <ul class="points">
+              <li>Taught sustainability to 1,000+ K–8 students across 9 schools.</li>
+              <li>Designed lessons on eco-friendly building and sustainable design.</li>
+              <li>Led school outreach and worked with teachers to get the curriculum adopted.</li>
+              <li>Hosted a virtual sustainability event with 40+ participants.</li>
+            </ul>
+          </div>
+        </article>
+        <article class="track">
+          <span class="no">B3</span>
+          <h3>PerfectlyU</h3>
+          <span class="time">Jan 2025 – 2026</span>
+          <div class="track-body">
+            <p class="role">Founder</p>
+            <ul class="points">
+              <li>Developed a startup concept for a virtual fitting room for online shopping.</li>
+              <li>Ran the user research and market analysis behind the product.</li>
+              <li>Wrote the business plan with my team, covering branding, marketing, and revenue.</li>
+              <li>Pitched the company to a live audience.</li>
+            </ul>
+          </div>
+        </article>
+        <article class="track">
+          <span class="no">B4</span>
+          <h3>King County Library System</h3>
+          <span class="time">Sep 2023 – Aug 2024</span>
+          <div class="track-body">
+            <p class="role">Volunteer tutor · Redmond, WA</p>
+            <ul class="points">
+              <li>Tutored elementary and middle school students one on one in math and English.</li>
+              <li>Helped with reading comprehension, writing, and problem solving.</li>
+            </ul>
+          </div>
+        </article>
+        <article class="track">
+          <span class="no">B5</span>
+          <h3>ACE Mentorship</h3>
+          <span class="time">2024 – 2026</span>
+          <div class="track-body">
+            <p class="role">Intern · Seattle, WA</p>
+            <ul class="points">
+              <li>Worked with industry mentors on the electrical design of a building.</li>
+              <li>Laid out power distribution and lighting for efficiency and safety.</li>
+              <li>Ran load calculations to estimate the building's energy needs.</li>
+            </ul>
+          </div>
+        </article>
+        <article class="track">
+          <span class="no">B6</span>
+          <h3>AMpowering</h3>
+          <span class="time">Sep – Nov 2023</span>
+          <div class="track-body">
+            <p class="role">Intern</p>
+            <ul class="points">
+              <li>Completed a full SWOT analysis of the nonprofit with a small team.</li>
+              <li>Researched its operations and growth opportunities, and set up the collaboration.</li>
+              <li>Presented our recommendations directly to the organization.</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
 
-        <article class="job">
-          <header>
-            <h3>BloomWise</h3>
-            <p class="job-role">Co-founder</p>
-            <p class="job-date">Jun 2025 – 2026</p>
-          </header>
-          <ul class="points">
-            <li>Taught sustainability to 1,000+ K–8 students across 9 schools.</li>
-            <li>Designed lessons on eco-friendly building and sustainable design.</li>
-            <li>Led school outreach and worked with teachers to get the curriculum adopted.</li>
-            <li>Hosted a virtual sustainability event with 40+ participants.</li>
-          </ul>
-        </article>
-
-        <article class="job">
-          <header>
-            <h3>PerfectlyU</h3>
-            <p class="job-role">Founder</p>
-            <p class="job-date">Jan 2025 – 2026</p>
-          </header>
-          <ul class="points">
-            <li>Developed a startup concept for a virtual fitting room for online shopping.</li>
-            <li>Ran the user research and market analysis behind the product.</li>
-            <li>Wrote the business plan with my team, covering branding, marketing, and revenue.</li>
-            <li>Pitched the company to a live audience.</li>
-          </ul>
-        </article>
-
-        <article class="job">
-          <header>
-            <h3>King County Library System</h3>
-            <p class="job-role">Volunteer tutor · Redmond, WA</p>
-            <p class="job-date">Sep 2023 – Aug 2024</p>
-          </header>
-          <ul class="points">
-            <li>Tutored elementary and middle school students one on one in math and English.</li>
-            <li>Helped with reading comprehension, writing, and problem solving.</li>
-          </ul>
-        </article>
-
-        <article class="job">
-          <header>
-            <h3>ACE Mentorship</h3>
-            <p class="job-role">Intern · Seattle, WA</p>
-            <p class="job-date">2024 – 2026</p>
-          </header>
-          <ul class="points">
-            <li>Worked with industry mentors on the electrical design of a building.</li>
-            <li>Laid out power distribution and lighting for efficiency and safety.</li>
-            <li>Ran load calculations to estimate the building's energy needs.</li>
-          </ul>
-        </article>
-
-        <article class="job">
-          <header>
-            <h3>AMpowering</h3>
-            <p class="job-role">Intern</p>
-            <p class="job-date">Sep – Nov 2023</p>
-          </header>
-          <ul class="points">
-            <li>Completed a full SWOT analysis of the nonprofit with a small team.</li>
-            <li>Researched its operations and growth opportunities, and set up the collaboration.</li>
-            <li>Presented our recommendations directly to the organization.</li>
-          </ul>
-        </article>
+    <!-- Listening (hidden until Spotify data loads) -->
+    <section id="listening" class="section full wrap" hidden>
+      <div class="section-head">
+        <p class="side">On repeat</p>
+        <h2>What I'm listening to</h2>
+        <p>Pulled live from my Spotify. Top picks cover the last four weeks.</p>
+      </div>
+      <div class="listening">
+        <div>
+          <h3 class="col-title">Top tracks</h3>
+          <ol class="music-list" id="top-tracks"></ol>
+        </div>
+        <div>
+          <h3 class="col-title">Top artists</h3>
+          <ol class="music-list artists" id="top-artists"></ol>
+        </div>
+        <div>
+          <h3 class="col-title">Recently played</h3>
+          <ul class="music-list" id="recent"></ul>
+        </div>
       </div>
     </section>
 
     <!-- Education & skills -->
     <section id="education" class="section wrap">
       <div class="section-head">
+        <p class="side">Liner notes</p>
         <h2>Education &amp; skills</h2>
       </div>
-      <div class="section-body two-col">
+      <div class="two-col">
         <div>
           <h3 class="col-title">Education</h3>
-          <ul class="edu">
+          <ul class="credits">
             <li><strong>The Ohio State University</strong><span>Aug 2026 – present</span></li>
             <li><strong>Tesla STEM High School</strong><span>Sep 2022 – 2026</span></li>
-            <li>
-              <strong>DigiPen Institute of Technology</strong>
-              <span>Fire &amp; EMS (2022), Personal Finance (2023), 3D Modeling (2024)</span>
-            </li>
+            <li><strong>DigiPen Institute of Technology</strong><span>Fire &amp; EMS (2022), Personal Finance (2023), 3D Modeling (2024)</span></li>
           </ul>
         </div>
         <div>
-          <h3 class="col-title">Skills</h3>
-          <dl class="skills">
-            <dt>3D &amp; design</dt><dd>Blender, SketchUp, Twinmotion</dd>
-            <dt>Professional</dt><dd>Research and data analysis, project management, public speaking, networking</dd>
-            <dt>Languages</dt><dd>English and Hindi (native)</dd>
-          </dl>
+          <h3 class="col-title">Credits</h3>
+          <ul class="credits">
+            <li><strong>3D &amp; design</strong><span>Blender, SketchUp, Twinmotion</span></li>
+            <li><strong>Professional</strong><span>Research and data analysis, project management, public speaking, networking</span></li>
+            <li><strong>Languages</strong><span>English and Hindi (native)</span></li>
+          </ul>
         </div>
       </div>
     </section>
@@ -278,7 +313,7 @@
       <div class="wrap contact-inner">
         <div>
           <h2>Get in touch</h2>
-          <p>I'm looking for internships, research positions, and good hackathon teams. Email is the fastest way to reach me.</p>
+          <p>I'm looking for internships, research positions, and good hackathon teams. Song recommendations are welcome too. Email is the fastest way to reach me.</p>
         </div>
         <div class="contact-links">
           <a class="contact-email" href="mailto:pratulsaini1@gmail.com">pratulsaini1@gmail.com</a>
@@ -299,27 +334,27 @@
   (() => {
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Theme toggle (light by default, choice is remembered)
+    // ---------- Theme toggle (light by default, choice is remembered) ----------
     const root = document.documentElement;
     const toggle = document.getElementById('theme-toggle');
     const meta = document.querySelector('meta[name="theme-color"]');
-    const sync = () => {
+    const syncTheme = () => {
       const dark = root.dataset.theme === 'dark';
       toggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
-      meta.setAttribute('content', dark ? '#141513' : '#f6f3ec');
+      meta.setAttribute('content', dark ? '#141312' : '#f4efe6');
     };
     toggle.addEventListener('click', () => {
       const dark = root.dataset.theme !== 'dark';
       if (dark) root.dataset.theme = 'dark'; else delete root.dataset.theme;
       localStorage.setItem('theme', dark ? 'dark' : 'light');
-      sync();
+      syncTheme();
     });
-    sync();
+    syncTheme();
 
-    // "Résumé (PDF)" opens the print dialog; the print styles turn the page into a clean résumé
+    // "Résumé (PDF)" opens the print dialog; print styles turn the page into a clean résumé.
     document.getElementById('print-resume').addEventListener('click', () => window.print());
 
-    // Highlight the nav link for the section on screen
+    // Underline the nav link for the section on screen.
     const links = [...document.querySelectorAll('.nav nav a')];
     const spy = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
@@ -327,7 +362,131 @@
         links.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
-    ['work', 'experience', 'education', 'contact'].forEach((id) => spy.observe(document.getElementById(id)));
+    ['work', 'experience', 'listening', 'contact'].forEach((id) => spy.observe(document.getElementById(id)));
+
+    // ---------- Spotify ----------
+    const $ = (id) => document.getElementById(id);
+    const deck = $('deck');
+    const safeUrl = (u) => (typeof u === 'string' && u.startsWith('https://open.spotify.com/') ? u : null);
+    const safeImg = (u) => (typeof u === 'string' && u.startsWith('https://') ? u : null);
+    const fmt = (ms) => { const s = Math.max(0, Math.floor(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+    const ago = (iso) => {
+      const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+      if (!isFinite(m)) return '';
+      if (m < 1) return 'just now';
+      if (m < 60) return m + ' min ago';
+      const h = Math.round(m / 60);
+      if (h < 24) return h + (h === 1 ? ' hour ago' : ' hours ago');
+      const d = Math.round(h / 24);
+      return d + (d === 1 ? ' day ago' : ' days ago');
+    };
+    const el = (tag, cls, text) => {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text != null) e.textContent = text;
+      return e;
+    };
+    const art = (src, cls) => {
+      const s = safeImg(src);
+      if (!s) return el('span', cls + ' blank');
+      const img = el('img', cls);
+      img.src = s; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+      return img;
+    };
+
+    let ticker = null;
+    let progress = { base: 0, at: 0, duration: 0 };
+
+    function setPlayer(mode, t, statusText) {
+      deck.classList.toggle('playing', mode === 'playing');
+      $('player').dataset.mode = mode;
+      $('np-status').textContent = statusText;
+
+      const title = $('np-title');
+      title.textContent = t ? t.name : 'Not playing right now';
+      const href = t && safeUrl(t.url);
+      if (href) title.href = href; else title.removeAttribute('href');
+      $('np-artist').textContent = t ? t.artists : 'Check back later';
+
+      const img = safeImg(t && t.image);
+      const sleeveArt = $('sleeve-art');
+      if (img) {
+        sleeveArt.src = img; sleeveArt.hidden = false; $('sleeve-blank').hidden = true;
+        $('label').style.backgroundImage = 'url("' + img.replace(/"/g, '%22') + '")';
+      } else {
+        sleeveArt.hidden = true; $('sleeve-blank').hidden = false;
+        $('label').style.backgroundImage = '';
+      }
+    }
+
+    function startProgress(now) {
+      clearInterval(ticker);
+      const bar = $('np-progress');
+      if (!now || !now.durationMs) { bar.hidden = true; return; }
+      bar.hidden = false;
+      progress = { base: now.progressMs, at: Date.now(), duration: now.durationMs };
+      const draw = () => {
+        const p = now.isPlaying ? progress.base + (Date.now() - progress.at) : progress.base;
+        const clamped = Math.min(p, progress.duration);
+        $('np-elapsed').textContent = fmt(clamped);
+        $('np-duration').textContent = fmt(progress.duration);
+        $('np-fill').style.width = (clamped / progress.duration * 100).toFixed(2) + '%';
+        // Song ended: fetch the next one, once.
+        if (now.isPlaying && !now.reloaded && p > progress.duration + 3000) { now.reloaded = true; load(); }
+      };
+      draw();
+      if (now.isPlaying) ticker = setInterval(draw, 1000);
+    }
+
+    function renderLists(data) {
+      const tracks = $('top-tracks'), artists = $('top-artists'), recent = $('recent');
+      tracks.replaceChildren(); artists.replaceChildren(); recent.replaceChildren();
+
+      const row = (item, sub, side, round) => {
+        const li = el('li');
+        const href = safeUrl(item.url);
+        const wrap = href ? el('a', 'row') : el('div', 'row');
+        if (href) { wrap.href = href; wrap.target = '_blank'; wrap.rel = 'noopener'; }
+        wrap.append(art(item.image, round ? 'art round' : 'art'));
+        const text = el('span', 'row-text');
+        text.append(el('strong', null, item.name), el('span', null, sub));
+        wrap.append(text);
+        if (side) wrap.append(el('span', 'row-side', side));
+        li.append(wrap);
+        return li;
+      };
+
+      (data.topTracks || []).forEach((t) => tracks.append(row(t, t.artists)));
+      (data.topArtists || []).forEach((a) => artists.append(row(a, (a.genres || []).join(', ') || 'Artist', null, true)));
+      (data.recent || []).slice(0, 5).forEach((t) => recent.append(row(t, t.artists, ago(t.playedAt))));
+
+      const any = (data.topTracks || []).length || (data.topArtists || []).length || (data.recent || []).length;
+      $('listening').hidden = !any;
+    }
+
+    async function load() {
+      try {
+        const res = await fetch('/api/spotify', { headers: { Accept: 'application/json' } });
+        const data = await res.json();
+        if (!data.configured || data.error) throw new Error('offline');
+
+        const now = data.now;
+        const last = (data.recent || [])[0];
+        if (now && now.isPlaying) setPlayer('playing', now, 'Listening now on Spotify');
+        else if (now) setPlayer('paused', now, 'Paused on Spotify');
+        else if (last) setPlayer('recent', last, 'Last played ' + ago(last.playedAt));
+        else setPlayer('idle', null, 'Spotify');
+        startProgress(now);
+        renderLists(data);
+      } catch (e) {
+        setPlayer('idle', null, 'Not listening right now');
+        startProgress(null);
+      }
+    }
+
+    load();
+    setInterval(() => { if (!document.hidden) load(); }, 30000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
   })();
   </script>
 </body>

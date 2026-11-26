@@ -1,4 +1,5 @@
 name = "pratulsaini-fyi"
+main = "src/index.js"
 compatibility_date = "2026-11-01"
 
 # Serve on your own domain. Cloudflare creates the DNS records and the SSL certificate.
@@ -12,6 +13,13 @@ routes = [
 workers_dev = false
 preview_urls = false
 
-# Static site: serve everything in ./public
+# Static site: files in ./public are served directly.
+# Anything else (like /api/spotify) goes to src/index.js.
 [assets]
 directory = "./public"
+binding = "ASSETS"
+
+# Spotify keys are secrets, not settings. Add them with:
+#   npx wrangler secret put SPOTIFY_CLIENT_ID
+#   npx wrangler secret put SPOTIFY_CLIENT_SECRET
+#   npx wrangler secret put SPOTIFY_REFRESH_TOKEN
